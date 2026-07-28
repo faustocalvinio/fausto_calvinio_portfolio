@@ -1,0 +1,7 @@
+{
+  "name": "fausto-calvinio-portfolio",
+  "type": "module",
+  "private": true,
+  "scripts": { "dev": "astro dev", "build": "astro build", "preview": "astro preview" },
+  "dependencies": { "@astrojs/sitemap": "^3.2.1", "astro": "^5.7.0" }
+}

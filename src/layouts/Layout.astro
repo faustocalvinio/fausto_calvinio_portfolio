@@ -1,0 +1,6 @@
+---
+import '../styles/global.css';
+const { title = 'Fausto Calviño — Software, IA y automatización', description = 'Ingeniero de software especializado en sistemas multiagente, agentes IA, automatización n8n e integraciones a medida.' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html><html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={description} /><link rel="canonical" href={canonical} /><meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:type" content="website" /><meta property="og:url" content={canonical} /><meta name="twitter:card" content="summary" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,360..700,0..100&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" /><title>{title}</title></head><body><slot /></body></html>

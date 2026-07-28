@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://faustocalvinio.com/sitemap-index.xml
