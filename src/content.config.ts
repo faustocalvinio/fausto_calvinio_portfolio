@@ -12,7 +12,7 @@ const projects = defineCollection({
 });
 const articles = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/articles' }),
-  schema: z.object({ title: z.string(), slug: z.string(), excerpt: z.string(), publishedAt: z.string(), status: z.string(), tags: z.array(z.string()), cover: z.string().nullable().default(null) }),
+  schema: z.object({ title: z.string(), slug: z.string(), excerpt: z.string(), publishedAt: z.string(), status: z.string(), tags: z.array(z.string()), cover: z.string().nullable().default(null), externalUrl: z.string().url().optional() }),
 });
 const services = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/services' }),

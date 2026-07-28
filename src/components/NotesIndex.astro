@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+
+const { articles, currentPage, totalPages, totalArticles } = Astro.props;
+const toPreview = (body: string | undefined, fallback: string) => {
+  if (!body) return fallback;
+  const text = body
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^[#>\-*+]+\s*/gm, '')
+    .replace(/[*_`~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > 230 ? `${text.slice(0, 230).trimEnd()}…` : text || fallback;
+};
+const firstArticle = (currentPage - 1) * 10 + 1;
+const lastArticle = firstArticle + articles.length - 1;
+const pageHref = (page: number) => page === 1 ? '/notas' : `/notas/pagina/${page}`;
+---
+
+<Layout title="Notas — Fausto Calviño" description="Notas sobre sistemas multiagente, automatización, integraciones e ingeniería de software.">
+  <Header />
+  <main>
+    <header class="notes-hero">
+      <div class="container">
+        <a class="back" href="/">← Volver al inicio</a>
+        <p class="eyebrow">Notas</p>
+        <h1>Aprendizajes en público.</h1>
+        <p class="lede">Ideas, decisiones y aprendizajes sobre agentes IA, automatización e ingeniería de software aplicada.</p>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="container notes-index">
+        <p class="notes-count">{totalArticles} notas publicadas · mostrando {firstArticle}–{lastArticle}</p>
+        <div class="article-list notes-list">
+          {articles.map((article: any) => (
+            <a class="article-row" href={article.data.externalUrl ?? `/notas/${article.data.slug}`} target={article.data.externalUrl ? '_blank' : undefined} rel={article.data.externalUrl ? 'noreferrer' : undefined}>
+              <span class="article-date">{article.data.publishedAt}</span>
+              <div class="note-summary">
+                <h2>{article.data.title}</h2>
+                <p>{article.data.excerpt}</p>
+                {!article.data.externalUrl && <p class="note-preview"><span aria-hidden="true">Vista previa · </span>{toPreview(article.body, article.data.excerpt)}</p>}
+                <ul class="tags">{article.data.tags.map((tag: string) => <li>{tag}</li>)}</ul>
+              </div>
+              <span class="case-link" aria-hidden="true">{article.data.externalUrl ? '↗' : '→'}</span>
+            </a>
+          ))}
+        </div>
+
+        {totalPages > 1 && <nav class="pagination" aria-label="Paginación de notas">
+          {currentPage > 1 && <a class="pagination-link" href={pageHref(currentPage - 1)}>← Anterior</a>}
+          <div class="pagination-pages">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => page === currentPage
+              ? <span class="pagination-current" aria-current="page">{page}</span>
+              : <a class="pagination-page" href={pageHref(page)}>{page}</a>)}
+          </div>
+          {currentPage < totalPages && <a class="pagination-link pagination-next" href={pageHref(currentPage + 1)}>Siguiente →</a>}
+        </nav>}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>

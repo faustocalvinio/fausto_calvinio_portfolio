@@ -1,0 +1,17 @@
+<button class="scroll-top" type="button" aria-label="Volver al inicio" aria-hidden="true">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5" /></svg>
+  <span>Arriba</span>
+</button>
+
+<script is:inline>
+  const scrollTopButton = document.querySelector('.scroll-top');
+  const updateScrollTopButton = () => {
+    const visible = window.scrollY > 560;
+    scrollTopButton?.classList.toggle('is-visible', visible);
+    scrollTopButton?.setAttribute('aria-hidden', String(!visible));
+  };
+
+  window.addEventListener('scroll', updateScrollTopButton, { passive: true });
+  updateScrollTopButton();
+  scrollTopButton?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>

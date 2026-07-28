@@ -1,1 +1,46 @@
-<header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-mark"></span><span class="brand-name">Fausto Calviño</span></a><button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button><nav class="site-nav" aria-label="Navegación principal"><ul><li><a class="nav-link" href="/#servicios">Servicios</a></li><li><a class="nav-link" href="/#plataforma">Plataforma IA</a></li><li><a class="nav-link" href="/#proyectos">Proyectos</a></li><li><a class="nav-link" href="/#notas">Notas</a></li><li><a class="nav-link" href="/#sobre-mi">Sobre mí</a></li></ul><a class="nav-cta" href="mailto:faustocalvino@outlook.com">Escribime</a></nav></div></header><script is:inline>const b=document.querySelector('.nav-toggle'),n=document.querySelector('.site-nav');b?.addEventListener('click',()=>{const open=n.classList.toggle('open');b.setAttribute('aria-expanded',String(open));});n?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{n.classList.remove('open');b?.setAttribute('aria-expanded','false')}));</script>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/"><span class="brand-mark"></span><span class="brand-name">Fausto Calviño</span></a>
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="site-nav" aria-label="Navegación principal">
+      <ul>
+        <li><a class="nav-link" href="/#servicios">Servicios</a></li>
+        <li><a class="nav-link" href="/#plataforma">Plataforma IA</a></li>
+        <li><a class="nav-link" href="/#proyectos">Proyectos</a></li>
+        <li><a class="nav-link" href="/notas">Notas</a></li>
+        <li><a class="nav-link" href="/#sobre-mi">Sobre mí</a></li>
+      </ul>
+      <label class="font-switcher">
+        <span>Tipografía</span>
+        <select id="font-pair" aria-label="Elegir combinación tipográfica">
+          <option value="fraunces">Editorial</option>
+          <option value="playfair">Clásica</option>
+          <option value="instrument">Contemporánea</option>
+        </select>
+      </label>
+      <a class="nav-cta" href="mailto:faustocalvino@outlook.com">Escribime</a>
+    </nav>
+  </div>
+</header>
+<script is:inline>
+  const b = document.querySelector('.nav-toggle');
+  const n = document.querySelector('.site-nav');
+  const fontPair = document.querySelector('#font-pair');
+  const root = document.documentElement;
+  const activeFont = root.dataset.fontPair || 'fraunces';
+
+  if (fontPair) fontPair.value = activeFont;
+  b?.addEventListener('click', () => {
+    const open = n.classList.toggle('open');
+    b.setAttribute('aria-expanded', String(open));
+  });
+  n?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
+    n.classList.remove('open');
+    b?.setAttribute('aria-expanded', 'false');
+  }));
+  fontPair?.addEventListener('change', (event) => {
+    const value = event.target.value;
+    root.dataset.fontPair = value;
+    localStorage.setItem('portfolio-font-pair', value);
+  });
+</script>

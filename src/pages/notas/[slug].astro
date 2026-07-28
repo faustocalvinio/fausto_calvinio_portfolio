@@ -1,6 +1,32 @@
 ---
-import Layout from '../../layouts/Layout.astro'; import Header from '../../components/Header.astro'; import Footer from '../../components/Footer.astro'; import { getCollection, render } from 'astro:content';
-export async function getStaticPaths(){return (await getCollection('articles')).map(entry=>({params:{slug:entry.data.slug},props:{entry}}));}
-const {entry}=Astro.props; const {Content}=await render(entry);
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  return (await getCollection('articles'))
+    .filter((entry) => !entry.data.externalUrl)
+    .map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
 ---
-<Layout title={`${entry.data.title} — Notas de Fausto`} description={entry.data.excerpt}><Header/><main><header class="detail-hero"><div class="container"><a class="back" href="/#notas">← Volver a notas</a><p class="eyebrow">{entry.data.publishedAt} · {entry.data.status}</p><h1>{entry.data.title}</h1><p class="lede">{entry.data.excerpt}</p><ul class="tags">{entry.data.tags.map(t=><li>{t}</li>)}</ul></div></header><section class="section"><div class="container detail-content"><Content/></div></section></main><Footer/></Layout>
+
+<Layout title={`${entry.data.title} — Notas de Fausto`} description={entry.data.excerpt}>
+  <Header />
+  <main>
+    <header class="detail-hero">
+      <div class="container">
+        <a class="back" href="/notas">← Volver a notas</a>
+        <p class="eyebrow">{entry.data.publishedAt} · {entry.data.status}</p>
+        <h1>{entry.data.title}</h1>
+        <p class="lede">{entry.data.excerpt}</p>
+        <ul class="tags">{entry.data.tags.map((tag) => <li>{tag}</li>)}</ul>
+      </div>
+    </header>
+    <section class="section"><div class="container detail-content"><Content /></div></section>
+  </main>
+  <Footer />
+</Layout>

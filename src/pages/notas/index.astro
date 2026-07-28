@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content';
+import NotesIndex from '../../components/NotesIndex.astro';
+
+const pageSize = 10;
+const allArticles = (await getCollection('articles'))
+  .filter((article) => article.data.status !== 'draft')
+  .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt));
+const articles = allArticles.slice(0, pageSize);
+---
+
+<NotesIndex articles={articles} currentPage={1} totalPages={Math.ceil(allArticles.length / pageSize)} totalArticles={allArticles.length} />
