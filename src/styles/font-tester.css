@@ -1,11 +1,24 @@
-:root[data-font-pair='playfair'] {
+/* Tipografía definitiva del sitio. */
+:root {
   --font-display: 'Playfair Display', Georgia, serif;
   --font-sans: 'DM Sans', system-ui, sans-serif;
 }
 
-:root[data-font-pair='instrument'] {
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-sans: 'Manrope', system-ui, sans-serif;
+/* La banda de tecnologías mantiene el esquema de color activo. */
+.marquee-section {
+  background: var(--bg-alt);
+  color: var(--ink);
+}
+
+.marquee-item {
+  color: var(--ink-soft);
+}
+
+/* Las cuatro capacidades de automatización se presentan en una grilla 2 × 2. */
+@media (min-width: 721px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 ::selection {
@@ -47,36 +60,6 @@ html {
 
 .site-nav ul {
   gap: 1.1rem;
-}
-
-.font-switcher {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-  color: var(--muted);
-  font-size: .7rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.font-switcher select {
-  appearance: none;
-  background-color: var(--bg);
-  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 12px) 52%, calc(100% - 8px) 52%;
-  background-repeat: no-repeat;
-  background-size: 4px 4px, 4px 4px;
-  border: 1px solid var(--line-strong);
-  border-radius: 2px;
-  color: var(--ink);
-  cursor: pointer;
-  font: 500 .78rem var(--font-sans);
-  letter-spacing: 0;
-  padding: .45rem 1.45rem .45rem .55rem;
-}
-
-.font-switcher select:hover {
-  border-color: var(--accent);
 }
 
 .scroll-top {
@@ -343,8 +326,9 @@ html {
   gap: clamp(2.5rem, 7vw, 7rem);
   overflow: hidden;
   padding: clamp(2rem, 5vw, 4.5rem);
-  background: var(--ink);
-  color: var(--on-ink);
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  color: var(--ink);
 }
 
 .contact-showcase::before,
@@ -379,11 +363,11 @@ html {
 }
 
 .contact-showcase .eyebrow {
-  color: color-mix(in srgb, var(--on-ink) 62%, transparent);
+  color: var(--muted);
 }
 
 .contact-showcase .eyebrow::after {
-  background: color-mix(in srgb, var(--on-ink) 22%, transparent);
+  background: var(--line);
 }
 
 .contact-kicker {
@@ -391,7 +375,7 @@ html {
   align-items: center;
   gap: .55rem;
   margin: 0 0 1.25rem;
-  color: color-mix(in srgb, var(--on-ink) 75%, transparent);
+  color: var(--ink-soft);
   font-size: .83rem;
 }
 
@@ -412,7 +396,7 @@ html {
 
 .contact-showcase .lede {
   max-width: 55ch;
-  color: color-mix(in srgb, var(--on-ink) 76%, transparent);
+  color: var(--ink-soft);
 }
 
 .contact-actions {
@@ -423,21 +407,21 @@ html {
 }
 
 .contact-showcase .btn-primary {
-  background: var(--on-ink);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .contact-showcase .btn-primary:hover {
   background: var(--accent);
-  color: var(--on-ink);
+  color: #fff;
 }
 
 .contact-showcase .btn-ghost {
-  border-color: color-mix(in srgb, var(--on-ink) 44%, transparent);
+  border-color: var(--line-strong);
 }
 
 .contact-showcase .btn-ghost:hover {
-  border-color: var(--on-ink);
+  border-color: var(--ink);
 }
 
 .contact-network {
@@ -452,15 +436,15 @@ html {
   grid-template-columns: 1fr auto;
   gap: .15rem 1rem;
   padding: 1.1rem 1.2rem;
-  border: 1px solid color-mix(in srgb, var(--on-ink) 18%, transparent);
-  background: color-mix(in srgb, var(--on-ink) 6%, transparent);
-  color: var(--on-ink);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
   transition: transform .25s ease, border-color .25s ease, background .25s ease;
 }
 
 .contact-network .contact-link small {
   grid-column: 1;
-  color: color-mix(in srgb, var(--on-ink) 58%, transparent);
+  color: var(--muted);
 }
 
 .contact-network .contact-link span {
@@ -480,7 +464,7 @@ html {
 .contact-network .contact-link:hover {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
-  color: var(--on-ink);
+  color: var(--ink);
   transform: translateX(.45rem);
 }
 
@@ -506,9 +490,6 @@ html {
     gap: .8rem;
   }
 
-  .font-switcher span {
-    display: none;
-  }
 }
 
 @media (max-width: 860px) {
@@ -522,19 +503,6 @@ html {
 }
 
 @media (max-width: 720px) {
-  .font-switcher {
-    justify-content: space-between;
-    padding-top: .2rem;
-  }
-
-  .font-switcher span {
-    display: inline;
-  }
-
-  .font-switcher select {
-    min-width: 140px;
-  }
-
   .scroll-top span {
     display: none;
   }
