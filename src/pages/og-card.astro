@@ -1,0 +1,172 @@
+---
+import '../styles/global.css';
+import '../styles/font-tester.css';
+import HeroSystemVisual from '../components/HeroSystemVisual.astro';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:opsz,wght@5..1200,400;5..1200,500;5..1200,600&display=swap" rel="stylesheet" />
+    <title>Vista previa social — Fausto Calviño</title>
+  </head>
+  <body>
+    <main class="social-card">
+      <div class="card-copy">
+        <p class="card-eyebrow">Fausto Calviño · Ingeniería de software</p>
+        <h1>Sistemas de IA que <span>trabajan con tu equipo.</span></h1>
+        <p class="card-summary">Agentes, automatización, software e integraciones para convertir procesos complejos en operaciones claras.</p>
+        <div class="card-signature">
+          <i></i>
+          <span>faustocalvinio.com</span>
+        </div>
+      </div>
+      <div class="card-map"><HeroSystemVisual /></div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+  }
+
+  body {
+    --card-star: color-mix(in srgb, var(--accent) 58%, transparent);
+    margin: 0;
+  }
+
+  .social-card {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1.14fr) minmax(410px, .86fr);
+    align-items: center;
+    gap: 58px;
+    width: 1200px;
+    height: 630px;
+    padding: 58px 64px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 86% 18%, color-mix(in srgb, #735ad0 20%, transparent), transparent 30%),
+      radial-gradient(circle at 68% 42%, color-mix(in srgb, #2d7fbf 25%, transparent), transparent 37%),
+      var(--bg);
+  }
+
+  .social-card::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, var(--card-star) 1px, transparent 1.4px),
+      radial-gradient(circle, color-mix(in srgb, var(--ink) 24%, transparent) .8px, transparent 1.2px);
+    background-position: 8px 11px, 31px 22px;
+    background-size: 53px 53px, 89px 89px;
+    content: '';
+    opacity: .42;
+    mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, .45) 28%, #000 63%, rgba(0, 0, 0, .82));
+  }
+
+  .social-card::after {
+    position: absolute;
+    z-index: -1;
+    top: -310px;
+    right: -240px;
+    width: 760px;
+    height: 760px;
+    border: 1px solid color-mix(in srgb, var(--accent) 17%, transparent);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .card-copy,
+  .card-map {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
+  .card-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 25px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .card-eyebrow::after {
+    width: 90px;
+    height: 1px;
+    background: var(--line);
+    content: '';
+  }
+
+  .card-copy h1 {
+    max-width: 9.8ch;
+    margin: 0;
+    font: 400 68px/.98 var(--font-display);
+    letter-spacing: -.035em;
+  }
+
+  .card-copy h1 span {
+    color: var(--accent);
+  }
+
+  .card-summary {
+    max-width: 525px;
+    margin: 28px 0 0;
+    color: var(--ink-soft);
+    font-size: 20px;
+    line-height: 1.48;
+  }
+
+  .card-signature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 33px;
+    color: var(--accent-ink);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+
+  .card-signature i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .card-map .knowledge-map {
+    width: 100%;
+    min-height: 482px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      --card-star: color-mix(in srgb, var(--accent) 62%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
