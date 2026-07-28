@@ -27,6 +27,7 @@ export async function GET({ site }: { site: URL }) {
     '',
     '## Proyectos',
     ...projects
+      .filter((project) => !project.data.hidden)
       .sort((a, b) => Number(b.data.featured) - Number(a.data.featured))
       .map((project) => `- [${project.data.title}](${toUrl(`/proyectos/${project.data.slug}`)}): ${project.data.summary}`),
     '',

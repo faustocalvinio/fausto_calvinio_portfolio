@@ -1,6 +1,7 @@
 /1-rtas.md
 /ESTETICA-PORTFOLIO.md
 /node_modules
+.astro/
 /portfolio-content.md
 /README-GH.md
 dist/

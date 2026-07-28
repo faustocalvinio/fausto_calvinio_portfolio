@@ -5,7 +5,7 @@ const projects = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(), slug: z.string(), category: z.string(), summary: z.string(), problem: z.string(), solution: z.string(),
-    status: z.string(), featured: z.boolean().default(false), year: z.string(), stack: z.array(z.string()),
+    status: z.string(), featured: z.boolean().default(false), hidden: z.boolean().default(false), year: z.string(), stack: z.array(z.string()),
     links: z.object({ live: z.string().optional(), github: z.string().optional(), demo: z.string().optional() }).default({}),
     visuals: z.array(z.object({ type: z.string(), caption: z.string() })).default([]),
   }),

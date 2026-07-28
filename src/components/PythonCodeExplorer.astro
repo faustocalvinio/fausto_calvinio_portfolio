@@ -1,0 +1,287 @@
+---
+const files = [
+  {
+    id: 'flow',
+    name: '07_flow_router.py',
+    path: 'orquestacion/07_flow_router.py',
+    folder: 'orquestacion',
+    lines: [
+      '<span class="str">"""Ejemplo de CrewAI Flow: estado explícito y routing entre crews."""</span>',
+      '<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field',
+      '<span class="kw">from</span> crewai <span class="kw">import</span> Crew, Task, Process',
+      '<span class="kw">from</span> crewai.flow.flow <span class="kw">import</span> Flow, listen, start, router',
+      '<span class="kw">from</span> common <span class="kw">import</span> agent, make_llm, print_header, save, text',
+      '',
+      '<span class="dec">@dataclass</span>',
+      '<span class="kw">class</span> <span class="type">CaseState</span>:',
+      '    request: <span class="type">str</span> = <span class="str">""</span>',
+      '    category: <span class="type">str</span> = <span class="str">""</span>',
+      '    result: <span class="type">str</span> = <span class="str">""</span>',
+      '    events: <span class="type">list</span>[<span class="type">str</span>] = <span class="fn">field</span>(default_factory=<span class="type">list</span>)',
+      '',
+      '<span class="kw">class</span> <span class="type">CaseFlow</span>(Flow[CaseState]):',
+      '    <span class="dec">@start</span>()',
+      '    <span class="kw">def</span> <span class="fn">intake</span>(self):',
+      '        self.state.category = <span class="str">"technical"</span> <span class="kw">if</span> <span class="fn">any</span>(',
+      '            x <span class="kw">in</span> self.state.request.<span class="fn">lower</span>()',
+      '            <span class="kw">for</span> x <span class="kw">in</span> (<span class="str">"api"</span>, <span class="str">"error"</span>, <span class="str">"código"</span>, <span class="str">"codigo"</span>)',
+      '        ) <span class="kw">else</span> <span class="str">"business"</span>',
+      '',
+      '    <span class="dec">@router</span>(intake)',
+      '    <span class="kw">def</span> <span class="fn">route</span>(self):',
+      '        <span class="kw">return</span> self.state.category',
+    ],
+  },
+  {
+    id: 'common',
+    name: 'common.py',
+    path: 'orquestacion/common.py',
+    folder: 'orquestacion',
+    lines: [
+      '<span class="kw">from</span> __future__ <span class="kw">import</span> annotations',
+      '',
+      '<span class="kw">import</span> os',
+      '<span class="kw">from</span> pathlib <span class="kw">import</span> Path',
+      '<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv',
+      '<span class="kw">from</span> crewai <span class="kw">import</span> Agent, LLM',
+      '',
+      '<span class="fn">load_dotenv</span>()',
+      'ROOT = Path(__file__).<span class="fn">resolve</span>().parents[<span class="num">1</span>]',
+      'OUTPUTS = ROOT / <span class="str">"outputs"</span> / <span class="str">"orquestacion"</span>',
+      '',
+      '<span class="kw">def</span> <span class="fn">make_llm</span>(temperature: <span class="type">float</span> = <span class="num">0.3</span>) -> LLM:',
+      '    <span class="str">"""Construye el LLM usando OpenAI o el endpoint OpenCode ya usado por el proyecto."""</span>',
+      '    api_key = os.<span class="fn">getenv</span>(<span class="str">"OPENAI_API_KEY"</span>) <span class="kw">or</span> os.<span class="fn">getenv</span>(<span class="str">"OPENCODE_API_KEY"</span>)',
+      '    <span class="kw">if not</span> api_key:',
+      '        <span class="kw">raise</span> <span class="type">RuntimeError</span>(<span class="str">"Configura OPENAI_API_KEY u OPENCODE_API_KEY en .env"</span>)',
+      '',
+      '    model = os.<span class="fn">getenv</span>(<span class="str">"CREWAI_MODEL"</span>) <span class="kw">or</span> os.<span class="fn">getenv</span>(<span class="str">"OPENCODE_MODEL"</span>) <span class="kw">or</span> <span class="str">"gpt-4o-mini"</span>',
+      '    base_url = os.<span class="fn">getenv</span>(<span class="str">"OPENCODE_BASE_URL"</span>)',
+      '    kwargs = {<span class="str">"model"</span>: model, <span class="str">"temperature"</span>: temperature, <span class="str">"api_key"</span>: api_key}',
+      '    <span class="kw">return</span> LLM(**kwargs)',
+    ],
+  },
+  {
+    id: 'contable',
+    name: 'contable_crew.py',
+    path: 'contable/contable_crew.py',
+    folder: 'contable',
+    lines: [
+      '<span class="kw">import</span> streamlit <span class="kw">as</span> st',
+      '<span class="kw">from</span> crewai <span class="kw">import</span> Agent, Task, Crew, LLM',
+      '<span class="kw">from</span> crewai_tools <span class="kw">import</span> FirecrawlSearchTool',
+      '',
+      'st.<span class="fn">set_page_config</span>(',
+      '    page_title=<span class="str">"Estudio Contable - Asistente Financiero"</span>,',
+      '    layout=<span class="str">"wide"</span>,',
+      ')',
+      'st.<span class="fn">title</span>(<span class="str">"Estudio Contable - Asistente de Analisis Fiscal y Financiero"</span>)',
+      '',
+      'client_data_analyst = Agent(',
+      '    role=<span class="str">"Client Data Analyst"</span>,',
+      '    goal=<span class="str">"Analyze and structure the client financial data into a clear diagnostic baseline"</span>,',
+      '    backstory=<span class="str">"You are a meticulous financial analyst who excels at organizing raw financial data into meaningful summaries, identifying trends, and flagging anomalies."</span>,',
+      '    verbose=<span class="bool">True</span>,',
+      '    allow_delegation=<span class="bool">False</span>,',
+      '    llm=llm,',
+      ')',
+    ],
+  },
+  {
+    id: 'legal',
+    name: 'legal_crew.py',
+    path: 'legal/legal_crew.py',
+    folder: 'legal',
+    lines: [
+      '<span class="kw">import</span> streamlit <span class="kw">as</span> st',
+      '<span class="kw">from</span> crewai <span class="kw">import</span> Agent, Task, Crew, LLM',
+      '<span class="kw">from</span> crewai_tools <span class="kw">import</span> FirecrawlSearchTool',
+      '',
+      'st.<span class="fn">set_page_config</span>(',
+      '    page_title=<span class="str">"Estudio Jurídico - Asistente Legal"</span>,',
+      '    layout=<span class="str">"wide"</span>,',
+      ')',
+      'st.<span class="fn">warning</span>(',
+      '    <span class="str">"Aviso: Esta herramienta es un asistente de analisis preliminar. "</span>',
+      '    <span class="str">"No reemplaza el asesoramiento profesional de un abogado matriculado."</span>',
+      ')',
+      '',
+      'legal_researcher = Agent(',
+      '    role=<span class="str">"Legal Researcher"</span>,',
+      '    goal=<span class="str">"Research applicable laws, regulations, and relevant jurisprudence for the case"</span>,',
+      '    tools=[search_tool],',
+      '    llm=llm,',
+      ')',
+    ],
+  },
+  {
+    id: 'tecnologia',
+    name: 'tecnologia_ia_crew.py',
+    path: 'tecnologia/tecnologia_ia_crew.py',
+    folder: 'tecnologia',
+    lines: [
+      '<span class="kw">import</span> streamlit <span class="kw">as</span> st',
+      '<span class="kw">from</span> crewai <span class="kw">import</span> Agent, Task, Crew, LLM',
+      '',
+      'business_problem = st.<span class="fn">text_area</span>(',
+      '    <span class="str">"Problema de negocio o caso de uso a resolver con IA:"</span>,',
+      '    height=<span class="num">120</span>,',
+      ')',
+      'ai_objective = st.<span class="fn">selectbox</span>(',
+      '    <span class="str">"Objetivo de IA:"</span>,',
+      '    [<span class="str">"NLP / Chatbots"</span>, <span class="str">"Computer Vision"</span>, <span class="str">"Predictive Analytics"</span>, <span class="str">"Recommender Systems"</span>, <span class="str">"Automatizacion con IA"</span>, <span class="str">"Otro"</span>],',
+      ')',
+      '',
+      'ml_solution_architect = Agent(',
+      '    role=<span class="str">"ML Solution Architect"</span>,',
+      '    goal=<span class="str">"Design the ML solution architecture including model selection, data pipeline, and integration approach that balances accuracy, scalability, and maintainability"</span>,',
+      '    backstory=<span class="str">"You are a principal ML engineer with deep experience in designing end-to-end ML systems, from data preprocessing and feature engineering to model training, evaluation, and serving, ensuring solutions are production-ready and scalable."</span>,',
+      '    llm=llm,',
+      ')',
+    ],
+  },
+];
+---
+
+<section class="code-showcase" aria-labelledby="code-showcase-title">
+  <div class="code-intro">
+    <div>
+      <p class="code-kicker">Arquitectura navegable</p>
+      <h2 id="code-showcase-title">Mirá cómo se conectan las piezas.</h2>
+    </div>
+    <p>Extractos reales de <strong>practica_agentes_ia</strong>: routing con CrewAI Flow, configuración compartida y crews especializados por rubro.</p>
+  </div>
+
+  <div class="editor-shell">
+    <div class="editor-titlebar" aria-hidden="true">
+      <span class="window-dots"><i></i><i></i><i></i></span>
+      <span>practica_agentes_ia — Visual Studio Code</span>
+      <span class="titlebar-spacer"></span>
+    </div>
+
+    <div class="editor-workspace">
+      <aside class="file-explorer" aria-label="Explorador de archivos">
+        <div class="explorer-heading"><span>EXPLORADOR</span><span>···</span></div>
+        <div class="project-label">⌄ PRACTICA_AGENTES_IA</div>
+        <div class="tree-root">
+          {['orquestacion', 'contable', 'legal', 'tecnologia'].map(folder => (
+            <div class="tree-group">
+              <div class="tree-folder">⌄ <span>{folder}</span></div>
+              {files.filter(file => file.folder === folder).map(file => (
+                <button class:list={['tree-file', 'nested-file', { active: file.id === 'flow' }]} type="button" data-file-trigger={file.id}><span class="python-icon">Py</span>{file.name}</button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <div class="editor-main">
+        <div class="editor-tabs" role="tablist" aria-label="Archivos Python abiertos">
+          {files.map((file, index) => (
+            <button class:list={['editor-tab', { active: index === 0 }]} type="button" role="tab" tabindex={index === 0 ? 0 : -1} aria-selected={index === 0 ? 'true' : 'false'} aria-controls={`code-${file.id}`} id={`code-tab-${file.id}`} data-code-tab={file.id}>
+              <span class="python-icon">Py</span>{file.name}<span class="close-icon">×</span>
+            </button>
+          ))}
+        </div>
+
+        <div class="editor-breadcrumb" aria-live="polite">
+          <span>practica_agentes_ia</span><i>›</i><span data-code-folder>orquestacion</span><i>›</i><strong data-code-name>07_flow_router.py</strong>
+        </div>
+
+        <div class="code-viewport">
+          {files.map((file, index) => (
+            <pre class:list={['code-panel', { active: index === 0 }]} id={`code-${file.id}`} role="tabpanel" aria-labelledby={`code-tab-${file.id}`} hidden={index !== 0} data-code-panel={file.id} data-folder={file.folder} data-name={file.name}><code>{file.lines.map(line => <span class="code-line" set:html={line || ' '}></span>)}</code></pre>
+          ))}
+        </div>
+
+        <div class="editor-statusbar" aria-hidden="true">
+          <span>⑂ main*</span><span>✓ 0&nbsp;&nbsp; △ 0</span><span class="status-push"></span><span>Ln 10, Col 18</span><span>Spaces: 4</span><span>UTF-8</span><span>Python 3.12</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const codeTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-code-tab]'));
+  const fileTriggers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-file-trigger]'));
+  const codePanels = Array.from(document.querySelectorAll<HTMLElement>('[data-code-panel]'));
+  const breadcrumbFolder = document.querySelector<HTMLElement>('[data-code-folder]');
+  const breadcrumbName = document.querySelector<HTMLElement>('[data-code-name]');
+
+  function activateFile(id: string) {
+    codeTabs.forEach((tab) => {
+      const active = tab.dataset.codeTab === id;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    fileTriggers.forEach(trigger => trigger.classList.toggle('active', trigger.dataset.fileTrigger === id));
+    codePanels.forEach((panel) => {
+      const active = panel.dataset.codePanel === id;
+      panel.hidden = !active;
+      panel.classList.toggle('active', active);
+      if (active) {
+        if (breadcrumbFolder) breadcrumbFolder.textContent = panel.dataset.folder || 'orquestacion';
+        if (breadcrumbName) breadcrumbName.textContent = panel.dataset.name || '';
+      }
+    });
+  }
+
+  codeTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateFile(tab.dataset.codeTab!));
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      event.preventDefault();
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const next = codeTabs[(index + direction + codeTabs.length) % codeTabs.length];
+      activateFile(next.dataset.codeTab!);
+      next.focus();
+    });
+  });
+  fileTriggers.forEach(trigger => trigger.addEventListener('click', () => activateFile(trigger.dataset.fileTrigger!)));
+</script>
+
+<style>
+  .code-showcase{margin:0 0 clamp(4rem,9vw,7rem)}
+  .code-intro{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(2rem,6vw,5rem);align-items:end;margin-bottom:2rem}
+  .code-kicker{margin:0 0 .65rem;color:#4d8fda;font-size:.75rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  .code-intro h2{max-width:15ch;margin:0;font-size:clamp(2rem,4vw,3.4rem)}
+  .code-intro>p{margin:0;color:var(--muted)}
+  .editor-shell{--editor-border:#c8c8c8;--editor-chrome:#f3f3f3;--editor-main:#fff;--editor-text:#3b3b3b;--editor-muted:#616161;--editor-soft:#767676;--editor-hover:#e8e8e8;--editor-active:#d9e8f7;--editor-active-text:#1f1f1f;--editor-highlight:#f0f0f0;--editor-scroll:#c1c1c1;--syntax-keyword:#af00db;--syntax-function:#795e26;--syntax-type:#267f99;--syntax-string:#a31515;--syntax-property:#001080;--syntax-value:#098658;--syntax-decorator:#795e26;overflow:hidden;border:1px solid var(--editor-border);border-radius:12px;background:var(--editor-chrome);color:var(--editor-text);box-shadow:0 28px 60px rgba(3,10,18,.13);font-family:'Cascadia Code','SFMono-Regular',Consolas,monospace;color-scheme:light}
+  .editor-titlebar{height:35px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 12px;background:var(--editor-chrome);border-bottom:1px solid var(--editor-border);color:var(--editor-muted);font:11px var(--font-sans)}
+  .window-dots{display:flex;gap:6px}.window-dots i{width:9px;height:9px;border-radius:50%;background:#ff5f57}.window-dots i:nth-child(2){background:#febc2e}.window-dots i:nth-child(3){background:#28c840}
+  .editor-workspace{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:500px}
+  .file-explorer{background:var(--editor-chrome);border-right:1px solid var(--editor-border);color:var(--editor-text);font:11px var(--font-sans)}
+  .explorer-heading,.project-label{display:flex;justify-content:space-between;padding:10px 12px}.project-label{font-weight:600;font-size:10px;letter-spacing:.03em;padding-block:7px}
+  .tree-root{padding-bottom:12px}.tree-folder{height:25px;display:flex;align-items:center;gap:5px;padding-left:12px}.tree-folder.nested{padding-left:24px}
+  .tree-file{width:100%;height:25px;display:flex;align-items:center;gap:7px;padding:0 8px 0 30px;border:0;background:transparent;color:var(--editor-text);text-align:left;cursor:pointer;font:11px var(--font-sans)}
+  .tree-file.nested-file{padding-left:45px}.tree-file:hover{background:var(--editor-hover)}.tree-file.active{background:var(--editor-active);color:var(--editor-active-text)}
+  .python-icon{color:#3976a5;font:700 9px var(--font-sans);letter-spacing:-.06em}
+  .editor-main{min-width:0;display:grid;grid-template-rows:auto auto 1fr auto}
+  .editor-tabs{display:flex;overflow-x:auto;background:var(--editor-chrome);border-bottom:1px solid var(--editor-border);scrollbar-width:thin}
+  .editor-tab{flex:0 0 auto;height:36px;display:flex;align-items:center;gap:7px;padding:0 10px;border:0;border-right:1px solid var(--editor-border);border-top:1px solid transparent;background:var(--editor-chrome);color:var(--editor-muted);cursor:pointer;font:11px var(--font-sans)}
+  .editor-tab:hover{color:var(--editor-text)}.editor-tab.active{border-top-color:#4d8fda;background:var(--editor-main);color:var(--editor-active-text)}.close-icon{margin-left:6px;color:var(--editor-soft);font-size:14px}
+  .editor-breadcrumb{height:30px;display:flex;align-items:center;gap:7px;padding:0 14px;background:var(--editor-main);color:var(--editor-muted);font-size:10px}.editor-breadcrumb i{color:var(--editor-soft);font-style:normal}.editor-breadcrumb strong{color:var(--editor-text);font-weight:400}
+  .code-viewport{min-width:0;overflow:auto;background:var(--editor-main);scrollbar-color:var(--editor-scroll) transparent;scrollbar-width:thin}
+  .code-panel{min-width:680px;margin:0;padding:12px 0 34px;counter-reset:line;color:var(--editor-text);font:12px/1.72 'Cascadia Code','SFMono-Regular',Consolas,monospace;tab-size:4}
+  .code-panel.active{animation:code-in .18s ease both}.code-panel code{display:block}
+  .code-line{display:block;min-height:20px;padding:0 20px 0 56px;white-space:pre;position:relative}.code-line:before{counter-increment:line;content:counter(line);position:absolute;left:0;width:42px;color:var(--editor-soft);text-align:right}
+  .code-line:hover{background:var(--editor-highlight)}.code-line:nth-child(10){background:var(--editor-highlight)}.code-line:nth-child(10):after{content:'';position:absolute;left:51px;top:3px;bottom:3px;width:1px;background:var(--editor-text);animation:caret 1s step-end infinite}
+  :global(.kw){color:var(--syntax-keyword)}:global(.fn){color:var(--syntax-function)}:global(.type){color:var(--syntax-type)}:global(.str){color:var(--syntax-string)}:global(.prop){color:var(--syntax-property)}:global(.bool),:global(.num){color:var(--syntax-value)}:global(.dec){color:var(--syntax-decorator)}
+  .editor-statusbar{min-height:23px;display:flex;align-items:center;gap:14px;padding:0 9px;background:#007acc;color:#fff;font:9px var(--font-sans)}.status-push{flex:1}
+  @keyframes caret{50%{opacity:0}}@keyframes code-in{from{opacity:.65}to{opacity:1}}
+  @media(max-width:800px){
+    .code-intro{grid-template-columns:1fr;gap:1rem}.editor-workspace{grid-template-columns:1fr;grid-template-rows:auto 1fr;min-height:530px}
+    .file-explorer{overflow-x:auto;border-right:0;border-bottom:1px solid var(--editor-border)}.explorer-heading,.project-label,.tree-folder{display:none}.tree-root{display:flex;padding:6px}.tree-group{display:contents}
+    .tree-file,.tree-file.nested-file{width:auto;flex:0 0 auto;padding:0 10px;border-radius:3px}.editor-titlebar{grid-template-columns:auto 1fr}.editor-titlebar>span:nth-child(2){text-align:center}.titlebar-spacer{display:none}
+    .editor-statusbar span:nth-last-child(2),.editor-statusbar span:nth-last-child(3){display:none}
+  }
+  @media(prefers-color-scheme:dark){.editor-shell{--editor-border:#2b2b2b;--editor-chrome:#181818;--editor-main:#1f1f1f;--editor-text:#d4d4d4;--editor-muted:#9d9d9d;--editor-soft:#858585;--editor-hover:#2a2d2e;--editor-active:#37373d;--editor-active-text:#fff;--editor-highlight:#252526;--editor-scroll:#454545;--syntax-keyword:#c586c0;--syntax-function:#dcdcaa;--syntax-type:#4ec9b0;--syntax-string:#ce9178;--syntax-property:#9cdcfe;--syntax-value:#b5cea8;--syntax-decorator:#d7ba7d;box-shadow:0 28px 60px rgba(3,10,18,.22);color-scheme:dark}.python-icon{color:#73b7ed}}
+  @media(prefers-reduced-motion:reduce){.code-panel.active,.code-line:nth-child(10):after{animation:none}}
+</style>
+
+<style is:global>
+  .detail-content.detail-content-wide{max-width:var(--maxw)}
+  .detail-content-wide .detail-copy{max-width:72ch}
+</style>

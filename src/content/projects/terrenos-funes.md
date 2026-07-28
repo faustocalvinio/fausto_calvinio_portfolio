@@ -7,6 +7,7 @@ problem: La información inmobiliaria está dispersa entre sitios y necesita nor
 solution: Scrapers con httpx y BeautifulSoup alimentan agentes que extraen, limpian, clasifican y organizan oportunidades.
 status: Prototipo funcional con outputs de muestra.
 featured: true
+hidden: true
 year: '2026'
 stack: [CrewAI, Python, httpx, BeautifulSoup, Streamlit]
 links: {}
