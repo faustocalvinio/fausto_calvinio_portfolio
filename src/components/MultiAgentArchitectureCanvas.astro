@@ -1,0 +1,541 @@
+<figure class="architecture-map" aria-labelledby="architecture-caption">
+  <div class="architecture-map__header" aria-hidden="true">
+    <span>Arquitectura operativa</span>
+    <span class="architecture-map__mode"><i></i> Flujo secuencial</span>
+  </div>
+  <canvas
+    class="architecture-map__canvas"
+    data-architecture-canvas
+    role="img"
+    aria-label="Diagrama de una plataforma multiagente: una entrada de Streamlit se dirige a uno de ocho dominios, CrewAI coordina entre cuatro y siete agentes con OpenCode y Firecrawl, y genera un informe con trazabilidad."
+  >
+    Flujo de arquitectura: Streamlit, ocho dominios, CrewAI, agentes
+    secuenciales, OpenCode, Firecrawl e informes con trazabilidad.
+  </canvas>
+  <figcaption id="architecture-caption">
+    Un caso selecciona su dominio; el crew coordina agentes, herramientas y
+    tareas hasta producir una salida verificable.
+  </figcaption>
+</figure>
+
+<script>
+  const canvases = document.querySelectorAll('[data-architecture-canvas]');
+
+  canvases.forEach((canvas) => {
+    if (!(canvas instanceof HTMLCanvasElement) || canvas.dataset.ready) return;
+    canvas.dataset.ready = 'true';
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    const domains = [
+      'Contable',
+      'Legal',
+      'Inmobiliario',
+      'Salud',
+      'RRHH',
+      'Marketing',
+      'Tecnología',
+      'Educación',
+    ];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const darkMode = window.matchMedia('(prefers-color-scheme: dark)');
+    let width = 0;
+    let height = 0;
+    let animationFrame = 0;
+    let isVisible = true;
+
+    const roundedRect = (
+      x: number,
+      y: number,
+      rectWidth: number,
+      rectHeight: number,
+      radius = 8,
+    ) => {
+      const safeRadius = Math.min(radius, rectWidth / 2, rectHeight / 2);
+      context.beginPath();
+      context.roundRect(x, y, rectWidth, rectHeight, safeRadius);
+    };
+
+    const line = (
+      fromX: number,
+      fromY: number,
+      toX: number,
+      toY: number,
+      color: string,
+      lineWidth = 1,
+      dash: number[] = [],
+    ) => {
+      context.save();
+      context.strokeStyle = color;
+      context.lineWidth = lineWidth;
+      context.setLineDash(dash);
+      context.beginPath();
+      context.moveTo(fromX, fromY);
+      context.lineTo(toX, toY);
+      context.stroke();
+      context.restore();
+    };
+
+    const text = (
+      value: string,
+      x: number,
+      y: number,
+      color: string,
+      size = 11,
+      weight = 500,
+      align: CanvasTextAlign = 'center',
+    ) => {
+      context.fillStyle = color;
+      context.font = `${weight} ${size}px "Space Grotesk", system-ui, sans-serif`;
+      context.textAlign = align;
+      context.textBaseline = 'middle';
+      context.fillText(value, x, y);
+    };
+
+    const pill = (
+      label: string,
+      x: number,
+      y: number,
+      pillWidth: number,
+      active: boolean,
+      colors: Record<string, string>,
+    ) => {
+      const expanded = width >= 700;
+      const pillHeight = expanded ? 32 : 24;
+      roundedRect(x, y, pillWidth, pillHeight, expanded ? 5 : 3);
+      context.fillStyle = active ? colors.accentTint : colors.bg;
+      context.fill();
+      context.strokeStyle = active ? colors.accent : colors.line;
+      context.lineWidth = active ? 1.35 : 1;
+      context.stroke();
+      context.beginPath();
+      context.arc(
+        x + (expanded ? 15 : 11),
+        y + pillHeight / 2,
+        active ? (expanded ? 4 : 3) : expanded ? 3 : 2.2,
+        0,
+        Math.PI * 2,
+      );
+      context.fillStyle = active ? colors.accent : colors.muted;
+      context.fill();
+      text(
+        label,
+        x + pillWidth / 2 + (expanded ? 6 : 4),
+        y + pillHeight / 2 + 0.5,
+        active ? colors.accentInk : colors.inkSoft,
+        width < 390 ? 8.4 : expanded ? 12 : 9.5,
+        active ? 600 : 500,
+      );
+    };
+
+    const particle = (
+      fromX: number,
+      fromY: number,
+      toX: number,
+      toY: number,
+      progress: number,
+      color: string,
+    ) => {
+      const x = fromX + (toX - fromX) * progress;
+      const y = fromY + (toY - fromY) * progress;
+      context.save();
+      context.shadowColor = color;
+      context.shadowBlur = 8;
+      context.beginPath();
+      context.arc(x, y, 2.8, 0, Math.PI * 2);
+      context.fillStyle = color;
+      context.fill();
+      context.restore();
+    };
+
+    const getColors = () => {
+      const styles = getComputedStyle(canvas);
+      const read = (name: string) => styles.getPropertyValue(name).trim();
+      return {
+        bg: read('--map-bg'),
+        bgAlt: read('--map-bg-alt'),
+        ink: read('--map-ink'),
+        inkSoft: read('--map-ink-soft'),
+        muted: read('--map-muted'),
+        line: read('--map-line'),
+        lineStrong: read('--map-line-strong'),
+        accent: read('--map-accent'),
+        accentInk: read('--map-accent-ink'),
+        accentTint: read('--map-accent-tint'),
+        grid: read('--map-grid'),
+      };
+    };
+
+    const draw = (timestamp = 0) => {
+      const colors = getColors();
+      const narrow = width < 430;
+      const expanded = width >= 700;
+      const pillHeight = expanded ? 32 : 24;
+      const activeIndex = reducedMotion.matches
+        ? 2
+        : Math.floor(timestamp / 1550) % domains.length;
+      const motion = reducedMotion.matches ? 0.62 : (timestamp % 1550) / 1550;
+      const columns = narrow ? 2 : 4;
+      const rows = narrow ? 4 : 2;
+      const outer = narrow ? 14 : expanded ? 24 : 18;
+      const gap = narrow ? 7 : expanded ? 12 : 8;
+      const domainWidth = (width - outer * 2 - gap * (columns - 1)) / columns;
+      const domainTop = narrow ? 17 : expanded ? 26 : 20;
+      const rowGap = expanded ? 12 : 8;
+      const flowY = narrow ? 228 : Math.max(142, height * (expanded ? 0.59 : 0.56));
+      const inputX = outer;
+      const inputWidth = narrow ? 50 : expanded ? 112 : Math.min(82, width * 0.16);
+      const inputCenter = inputX + inputWidth / 2;
+      const routerX = narrow ? width * 0.32 : width * 0.33;
+      const crewX = narrow ? width * 0.46 : width * 0.56;
+      const crewWidth = narrow ? 68 : expanded ? 150 : Math.min(112, width * 0.22);
+      const outputWidth = narrow ? 58 : expanded ? 112 : Math.min(84, width * 0.17);
+      const outputX = width - outer - outputWidth;
+      const routerRadius = narrow ? 22 : expanded ? 38 : 30;
+      const nodeHeight = narrow ? 48 : expanded ? 64 : 48;
+      const crewHeight = narrow ? 60 : expanded ? 78 : 60;
+      const toolsY = narrow ? height - 65 : expanded ? height - 58 : height - 48;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = colors.bgAlt;
+      context.fillRect(0, 0, width, height);
+
+      context.save();
+      context.strokeStyle = colors.grid;
+      context.lineWidth = 1;
+      for (let x = 8; x < width; x += 22) line(x, 0, x, height, colors.grid);
+      for (let y = 8; y < height; y += 22) line(0, y, width, y, colors.grid);
+      context.restore();
+
+      domains.forEach((domain, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = outer + column * (domainWidth + gap);
+        const y = domainTop + row * (pillHeight + rowGap);
+        pill(domain, x, y, domainWidth, index === activeIndex, colors);
+      });
+
+      const activeColumn = activeIndex % columns;
+      const activeRow = Math.floor(activeIndex / columns);
+      const activeDomainX =
+        outer + activeColumn * (domainWidth + gap) + domainWidth / 2;
+      const activeDomainY =
+        domainTop + activeRow * (pillHeight + rowGap) + pillHeight;
+      const routerTop = flowY - routerRadius;
+      line(
+        activeDomainX,
+        activeDomainY,
+        routerX,
+        routerTop,
+        colors.accent,
+        1.35,
+        [3, 4],
+      );
+      particle(
+        activeDomainX,
+        activeDomainY,
+        routerX,
+        routerTop,
+        motion,
+        colors.accent,
+      );
+
+      line(
+        inputX + inputWidth,
+        flowY,
+        routerX - routerRadius,
+        flowY,
+        colors.lineStrong,
+        1.25,
+      );
+      line(
+        routerX + routerRadius,
+        flowY,
+        crewX,
+        flowY,
+        colors.lineStrong,
+        1.25,
+      );
+      line(
+        crewX + crewWidth,
+        flowY,
+        outputX,
+        flowY,
+        colors.lineStrong,
+        1.25,
+      );
+
+      roundedRect(inputX, flowY - nodeHeight / 2, inputWidth, nodeHeight, expanded ? 6 : 4);
+      context.fillStyle = colors.bg;
+      context.fill();
+      context.strokeStyle = colors.lineStrong;
+      context.stroke();
+      text('ENTRADA', inputCenter, flowY - (expanded ? 10 : 7), colors.muted, narrow ? 7.5 : expanded ? 10 : 8.5, 600);
+      text('Streamlit', inputCenter, flowY + (expanded ? 11 : 8), colors.ink, narrow ? 9 : expanded ? 13 : 10.5, 600);
+
+      context.save();
+      context.shadowColor = colors.accent;
+      context.shadowBlur = 14;
+      context.beginPath();
+      context.arc(routerX, flowY, routerRadius, 0, Math.PI * 2);
+      context.fillStyle = colors.accentTint;
+      context.fill();
+      context.restore();
+      context.beginPath();
+      context.arc(routerX, flowY, routerRadius, 0, Math.PI * 2);
+      context.strokeStyle = colors.accent;
+      context.lineWidth = 1.4;
+      context.stroke();
+      text('CREW', routerX, flowY - (expanded ? 8 : 6), colors.accentInk, narrow ? 8 : expanded ? 11 : 9, 650);
+      text('AI', routerX, flowY + (expanded ? 11 : 8), colors.accentInk, narrow ? 10 : expanded ? 15 : 12, 650);
+
+      roundedRect(crewX, flowY - crewHeight / 2, crewWidth, crewHeight, expanded ? 6 : 4);
+      context.fillStyle = colors.bg;
+      context.fill();
+      context.strokeStyle = colors.lineStrong;
+      context.lineWidth = 1;
+      context.stroke();
+      text('CREW ACTIVO', crewX + crewWidth / 2, flowY - (expanded ? 23 : 17), colors.muted, narrow ? 7.2 : expanded ? 10 : 8.2, 600);
+
+      const agentCount = narrow ? 4 : 5;
+      const agentGap = narrow ? 11 : expanded ? 20 : 14;
+      const agentStart = crewX + crewWidth / 2 - ((agentCount - 1) * agentGap) / 2;
+      for (let index = 0; index < agentCount; index += 1) {
+        const agentX = agentStart + index * agentGap;
+        if (index < agentCount - 1) {
+          line(agentX + 3, flowY, agentX + agentGap - 3, flowY, colors.lineStrong);
+        }
+        context.beginPath();
+        context.arc(
+          agentX,
+          flowY,
+          index === 0 ? (expanded ? 4.5 : 3.5) : expanded ? 4 : 3,
+          0,
+          Math.PI * 2,
+        );
+        context.fillStyle = index === 0 ? colors.accent : colors.inkSoft;
+        context.fill();
+      }
+      text('4—7 agentes', crewX + crewWidth / 2, flowY + (expanded ? 23 : 17), colors.inkSoft, narrow ? 8 : expanded ? 12 : 9.5, 500);
+
+      roundedRect(outputX, flowY - nodeHeight / 2, outputWidth, nodeHeight, expanded ? 6 : 4);
+      context.fillStyle = colors.accentTint;
+      context.fill();
+      context.strokeStyle = colors.accent;
+      context.lineWidth = 1;
+      context.stroke();
+      text('SALIDA', outputX + outputWidth / 2, flowY - (expanded ? 10 : 7), colors.muted, narrow ? 7.4 : expanded ? 10 : 8.3, 600);
+      text('Informe .md', outputX + outputWidth / 2, flowY + (expanded ? 11 : 8), colors.accentInk, narrow ? 8.5 : expanded ? 13 : 10, 600);
+
+      const toolGap = narrow ? 7 : expanded ? 12 : 9;
+      const toolWidth = narrow ? 86 : expanded ? 142 : 106;
+      const toolHeight = expanded ? 38 : 30;
+      const toolsTotalWidth = toolWidth * 2 + toolGap;
+      const toolsX = Math.min(
+        width - outer - toolsTotalWidth,
+        Math.max(outer, crewX + crewWidth / 2 - toolsTotalWidth / 2),
+      );
+      const crewBottom = flowY + crewHeight / 2;
+      line(
+        toolsX + toolsTotalWidth / 2,
+        toolsY,
+        crewX + crewWidth / 2,
+        crewBottom,
+        colors.lineStrong,
+        1,
+        [2, 4],
+      );
+
+      [
+        ['OpenCode', 'LLM'],
+        ['Firecrawl', 'SEARCH'],
+      ].forEach(([label, type], index) => {
+        const x = toolsX + index * (toolWidth + toolGap);
+        roundedRect(x, toolsY - toolHeight / 2, toolWidth, toolHeight, expanded ? 5 : 3);
+        context.fillStyle = colors.bg;
+        context.fill();
+        context.strokeStyle = colors.line;
+        context.stroke();
+        text(label, x + (expanded ? 13 : 9), toolsY, colors.inkSoft, narrow ? 8.5 : expanded ? 12 : 9.5, 600, 'left');
+        text(type, x + toolWidth - (expanded ? 12 : 8), toolsY, colors.muted, narrow ? 6.8 : expanded ? 9 : 7.5, 600, 'right');
+      });
+
+      const firstProgress = Math.min(1, motion * 1.45);
+      const secondProgress = Math.max(0, Math.min(1, motion * 1.45 - 0.45));
+      particle(
+        inputX + inputWidth,
+        flowY,
+        routerX - routerRadius,
+        flowY,
+        firstProgress,
+        colors.accent,
+      );
+      particle(
+        routerX + routerRadius,
+        flowY,
+        crewX,
+        flowY,
+        secondProgress,
+        colors.accent,
+      );
+      particle(
+        crewX + crewWidth,
+        flowY,
+        outputX,
+        flowY,
+        secondProgress,
+        colors.accent,
+      );
+
+      if (!reducedMotion.matches && isVisible) {
+        animationFrame = requestAnimationFrame(draw);
+      }
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      cancelAnimationFrame(animationFrame);
+      draw(performance.now());
+    };
+
+    const visibility = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      cancelAnimationFrame(animationFrame);
+      if (isVisible) draw(performance.now());
+    });
+    const resizeObserver = new ResizeObserver(resize);
+    const redraw = () => resize();
+
+    visibility.observe(canvas);
+    resizeObserver.observe(canvas);
+    reducedMotion.addEventListener('change', redraw);
+    darkMode.addEventListener('change', redraw);
+    resize();
+  });
+</script>
+
+<style>
+  .architecture-map {
+    --map-bg: #f8fafc;
+    --map-bg-alt: #edf3f8;
+    --map-ink: #091420;
+    --map-ink-soft: #1a2b3d;
+    --map-muted: #597086;
+    --map-line: #cfdae6;
+    --map-line-strong: #aebdcd;
+    --map-accent: #1f518f;
+    --map-accent-ink: #123458;
+    --map-accent-tint: #e1ecf7;
+    --map-grid: rgba(31, 81, 143, 0.055);
+    margin: 1.2rem 0 0;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    background: var(--map-bg-alt);
+  }
+
+  .architecture-map__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 37px;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--map-bg);
+    color: var(--map-muted);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .architecture-map__mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    white-space: nowrap;
+  }
+
+  .architecture-map__mode i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--map-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--map-accent) 16%, transparent);
+  }
+
+  .architecture-map__canvas {
+    display: block;
+    width: 100%;
+    height: 310px;
+    background: var(--map-bg-alt);
+  }
+
+  .architecture-map figcaption {
+    margin: 0;
+    padding: 0.72rem 0.8rem 0.78rem;
+    border-top: 1px solid var(--line);
+    background: var(--map-bg);
+    color: var(--map-muted);
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }
+
+  @media (min-width: 700px) {
+    .architecture-map__header {
+      min-height: 44px;
+      padding: 0.72rem 1rem;
+      font-size: 0.72rem;
+    }
+
+    .architecture-map__canvas {
+      height: 390px;
+    }
+
+    .architecture-map figcaption {
+      padding: 0.9rem 1rem;
+      font-size: 0.82rem;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .architecture-map__header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .architecture-map__canvas {
+      height: 370px;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .architecture-map {
+      --map-bg: #09121d;
+      --map-bg-alt: #0c1724;
+      --map-ink: #e2e8f0;
+      --map-ink-soft: #bac8d6;
+      --map-muted: #8295aa;
+      --map-line: #203044;
+      --map-line-strong: #31445b;
+      --map-accent: #70ace1;
+      --map-accent-ink: #b9d8f2;
+      --map-accent-tint: #13263a;
+      --map-grid: rgba(112, 172, 225, 0.055);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .architecture-map__mode i {
+      box-shadow: none;
+    }
+  }
+</style>
