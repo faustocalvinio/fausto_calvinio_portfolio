@@ -1,32 +1,74 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
 import { getCollection, render } from 'astro:content';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import Layout from '../../layouts/Layout.astro';
+import {
+  createArticleSchema,
+  createBreadcrumbSchema,
+  toAbsoluteUrl,
+} from '../../lib/seo';
 
 export async function getStaticPaths() {
   return (await getCollection('articles'))
-    .filter((entry) => !entry.data.externalUrl)
-    .map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+    .filter(
+      (entry) =>
+        entry.data.status !== 'draft' && !entry.data.externalUrl,
+    )
+    .map((entry) => ({
+      params: { slug: entry.data.slug },
+      props: { entry },
+    }));
 }
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const path = `/notas/${entry.data.slug}/`;
+const image = entry.data.cover
+  ? { src: entry.data.cover, alt: entry.data.title }
+  : undefined;
+const structuredData = [
+  createArticleSchema({
+    title: entry.data.title,
+    description: entry.data.excerpt,
+    path,
+    publishedAt: entry.data.publishedAt,
+    tags: entry.data.tags,
+    image: entry.data.cover,
+  }),
+  createBreadcrumbSchema([
+    { name: 'Inicio', url: '/' },
+    { name: 'Notas', url: '/notas/' },
+    { name: entry.data.title, url: path },
+  ]),
+];
 ---
 
-<Layout title={`${entry.data.title} — Notas de Fausto`} description={entry.data.excerpt}>
+<Layout
+  title={entry.data.title}
+  description={entry.data.excerpt}
+  image={image}
+  type="article"
+  pageSchemaType="ItemPage"
+  mainEntityId={`${toAbsoluteUrl(path)}#article`}
+  publishedTime={entry.data.publishedAt}
+  tags={entry.data.tags}
+  structuredData={structuredData}
+>
   <Header />
   <main>
     <header class="detail-hero">
       <div class="container">
-        <a class="back" href="/notas">← Volver a notas</a>
+        <a class="back" href="/notas/">← Volver a notas</a>
         <p class="eyebrow">{entry.data.publishedAt} · {entry.data.status}</p>
         <h1>{entry.data.title}</h1>
         <p class="lede">{entry.data.excerpt}</p>
         <ul class="tags">{entry.data.tags.map((tag) => <li>{tag}</li>)}</ul>
       </div>
     </header>
-    <section class="section"><div class="container detail-content"><Content /></div></section>
+    <section class="section">
+      <div class="container detail-content"><Content /></div>
+    </section>
   </main>
   <Footer />
 </Layout>

@@ -1,0 +1,80 @@
+---
+// Página desactivada temporalmente.
+// Para restaurarla, mover este archivo a src/pages/agendar-reunion.astro
+// y volver a añadir el CTA de contacto y la entrada correspondiente en llms.txt.ts.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Agendar una reunión — Fausto Calviño"
+  description="Elegí un horario disponible para conversar durante 30 minutos sobre tu proyecto, proceso o idea."
+>
+  <Header />
+  <main>
+    <header class="detail-hero booking-hero">
+      <div class="container booking-intro">
+        <a class="back" href="/#contacto">← Volver a contacto</a>
+        <p class="eyebrow">Reunión de 30 minutos</p>
+        <h1 id="booking-title">Busquemos un horario para conversar</h1>
+        <p class="lede">Elegí el día y la hora que mejor te queden. Calendly ajustará automáticamente las opciones disponibles a tu zona horaria.</p>
+      </div>
+    </header>
+
+    <section class="section booking-section" aria-labelledby="booking-title">
+      <div class="container booking-container">
+        <div class="booking-shell">
+          <div id="calendly-embed" class="calendly-embed" aria-label="Selector de fecha y hora de Calendly"></div>
+          <p class="booking-fallback">
+            ¿El calendario no carga?
+            <a href="https://calendly.com/faustocalvino/30min" target="_blank" rel="noreferrer">Abrir Calendly en una pestaña nueva →</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+
+<script is:inline src="https://assets.calendly.com/assets/external/widget.js"></script>
+<script is:inline>
+  const calendlyContainer = document.querySelector('#calendly-embed');
+  const calendly = window['Calendly'];
+
+  if (calendlyContainer && calendly) {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const colorFromToken = (token, fallback) => {
+      const value = rootStyles.getPropertyValue(token).trim();
+      return /^#[0-9a-f]{6}$/i.test(value) ? value.slice(1) : fallback;
+    };
+    const calendlyUrl = new URL('https://calendly.com/faustocalvino/30min');
+
+    calendlyUrl.searchParams.set('hide_event_type_details', '1');
+    calendlyUrl.searchParams.set('background_color', colorFromToken('--bg', 'f5f8fb'));
+    calendlyUrl.searchParams.set('text_color', colorFromToken('--ink', '091420'));
+    calendlyUrl.searchParams.set('primary_color', colorFromToken('--accent', '1f518f'));
+
+    calendly.initInlineWidget({
+      url: calendlyUrl.toString(),
+      parentElement: calendlyContainer,
+      resize: true,
+    });
+  }
+</script>
+
+<style>
+  .booking-hero{position:relative;isolation:isolate;overflow:hidden}
+  .booking-hero::after{position:absolute;z-index:-1;top:-13rem;right:-8rem;width:31rem;height:31rem;border:1px solid color-mix(in srgb,var(--accent) 44%,transparent);border-radius:50%;box-shadow:0 0 7rem color-mix(in srgb,var(--accent) 12%,transparent);content:'';pointer-events:none}
+  .booking-intro{position:relative}
+  .booking-intro h1{max-width:15ch}
+  .booking-intro .lede{max-width:60ch}
+  .booking-section{background:var(--bg-alt)}
+  .booking-shell{overflow:hidden;padding:clamp(.75rem,2vw,1.5rem);border:1px solid var(--line);background:var(--bg);box-shadow:0 1.5rem 4rem color-mix(in srgb,var(--ink) 7%,transparent)}
+  .calendly-embed{width:100%;min-width:320px;min-height:700px}
+  .booking-fallback{margin:1rem 0 0;padding-top:1rem;border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;text-align:center}
+  .booking-fallback a{color:var(--accent-ink);font-weight:600;text-underline-offset:.22em}
+  .booking-fallback a:hover{color:var(--accent)}
+  @media(max-width:560px){.booking-container{padding-inline:0}.booking-shell{padding-inline:0;border-inline:0}.booking-fallback{margin-inline:var(--gutter);padding-inline:.25rem}.booking-intro h1{font-size:clamp(2.45rem,12vw,3.75rem)}}
+  @media(prefers-reduced-motion:reduce){.booking-shell{scroll-behavior:auto}}
+</style>
+</Layout>

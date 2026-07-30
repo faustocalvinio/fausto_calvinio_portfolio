@@ -1,7 +1,20 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import { siteConfig } from '../config/site';
+import {
+  createBreadcrumbSchema,
+  createItemListSchema,
+} from '../lib/seo';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
+
+interface Props {
+  articles: CollectionEntry<'articles'>[];
+  currentPage: number;
+  totalPages: number;
+  totalArticles: number;
+}
 
 const { articles, currentPage, totalPages, totalArticles } = Astro.props;
 const toPreview = (body: string | undefined, fallback: string) => {
@@ -16,12 +29,42 @@ const toPreview = (body: string | undefined, fallback: string) => {
     .trim();
   return text.length > 230 ? `${text.slice(0, 230).trimEnd()}…` : text || fallback;
 };
-const firstArticle = (currentPage - 1) * 10 + 1;
+const firstArticle =
+  (currentPage - 1) * siteConfig.content.notesPerPage + 1;
 const lastArticle = firstArticle + articles.length - 1;
-const pageHref = (page: number) => page === 1 ? '/notas' : `/notas/pagina/${page}`;
+const pageHref = (page: number) =>
+  page === 1 ? '/notas/' : `/notas/pagina/${page}/`;
+const pageTitle =
+  currentPage === 1 ? 'Notas' : `Notas — Página ${currentPage}`;
+const description =
+  currentPage === 1
+    ? 'Notas sobre sistemas multiagente, automatización, integraciones e ingeniería de software.'
+    : `Página ${currentPage} del archivo de notas sobre ingeniería de software, automatización y agentes de IA.`;
+const structuredData = [
+  createItemListSchema(
+    articles.map((article) => ({
+      name: article.data.title,
+      url: article.data.externalUrl ?? `/notas/${article.data.slug}/`,
+    })),
+  ),
+  createBreadcrumbSchema([
+    { name: 'Inicio', url: '/' },
+    { name: 'Notas', url: '/notas/' },
+    ...(currentPage > 1
+      ? [{ name: `Página ${currentPage}`, url: pageHref(currentPage) }]
+      : []),
+  ]),
+];
 ---
 
-<Layout title="Notas — Fausto Calviño" description="Notas sobre sistemas multiagente, automatización, integraciones e ingeniería de software.">
+<Layout
+  title={pageTitle}
+  description={description}
+  pageSchemaType="CollectionPage"
+  prev={currentPage > 1 ? pageHref(currentPage - 1) : undefined}
+  next={currentPage < totalPages ? pageHref(currentPage + 1) : undefined}
+  structuredData={structuredData}
+>
   <Header />
   <main>
     <header class="notes-hero">
@@ -38,7 +81,7 @@ const pageHref = (page: number) => page === 1 ? '/notas' : `/notas/pagina/${page
         <p class="notes-count">{totalArticles} notas publicadas · mostrando {firstArticle}–{lastArticle}</p>
         <div class="article-list notes-list">
           {articles.map((article: any) => (
-            <a class="article-row" href={article.data.externalUrl ?? `/notas/${article.data.slug}`} target={article.data.externalUrl ? '_blank' : undefined} rel={article.data.externalUrl ? 'noreferrer' : undefined}>
+            <a class="article-row" href={article.data.externalUrl ?? `/notas/${article.data.slug}/`} target={article.data.externalUrl ? '_blank' : undefined} rel={article.data.externalUrl ? 'noreferrer' : undefined}>
               <span class="article-date">{article.data.publishedAt}</span>
               <div class="note-summary">
                 <h2>{article.data.title}</h2>

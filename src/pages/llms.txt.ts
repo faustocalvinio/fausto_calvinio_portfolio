@@ -1,9 +1,9 @@
 import { getCollection } from 'astro:content';
+import { siteConfig } from '../config/site';
 
-const siteDescription = 'Portfolio de Fausto Calviño, ingeniero de software especializado en sistemas multiagente, agentes de IA, automatización e integraciones a medida.';
-
-export async function GET({ site }: { site: URL }) {
-  const toUrl = (path: string) => new URL(path, site).href;
+export async function GET({ site }: { site?: URL }) {
+  const siteUrl = site ?? new URL(siteConfig.url);
+  const toUrl = (path: string) => new URL(path, siteUrl).href;
   const [services, projects, notes] = await Promise.all([
     getCollection('services'),
     getCollection('projects'),
@@ -14,13 +14,13 @@ export async function GET({ site }: { site: URL }) {
     .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt));
 
   const lines = [
-    '# Fausto Calviño',
+    `# ${siteConfig.name}`,
     '',
-    `> ${siteDescription}`,
+    `> ${siteConfig.description}`,
     '',
     '## Perfil y contacto',
     `- [Inicio](${toUrl('/')}): Presentación, enfoque de trabajo y datos de contacto.`,
-    `- [Contacto](${toUrl('/#contacto')}): Escribir a faustocalvino@outlook.com para proyectos de software, IA y automatización.`,
+    `- [Contacto](${toUrl('/#contacto')}): Escribir a ${siteConfig.author.email} para proyectos de software, IA y automatización.`,
     '',
     '## Servicios',
     ...services.map((service) => `- [${service.data.title}](${toUrl('/#servicios')}): ${service.data.description}`),
@@ -29,11 +29,11 @@ export async function GET({ site }: { site: URL }) {
     ...projects
       .filter((project) => !project.data.hidden)
       .sort((a, b) => Number(b.data.featured) - Number(a.data.featured))
-      .map((project) => `- [${project.data.title}](${toUrl(`/proyectos/${project.data.slug}`)}): ${project.data.summary}`),
+      .map((project) => `- [${project.data.title}](${toUrl(`/proyectos/${project.data.slug}/`)}): ${project.data.summary}`),
     '',
     '## Notas y artículos',
-    `- [Índice de notas](${toUrl('/notas')}): Archivo completo de artículos sobre ingeniería de software, frontend, backend, automatización y agentes IA.`,
-    ...publishedNotes.map((note) => `- [${note.data.title}](${toUrl(`/notas/${note.data.slug}`)}): ${note.data.excerpt}`),
+    `- [Índice de notas](${toUrl('/notas/')}): Archivo completo de artículos sobre ingeniería de software, frontend, backend, automatización y agentes IA.`,
+    ...publishedNotes.map((note) => `- [${note.data.title}](${toUrl(`/notas/${note.data.slug}/`)}): ${note.data.excerpt}`),
     '',
     '## Datos de uso',
     '- El contenido puede citarse con atribución y enlace a la URL original.',

@@ -1,9 +1,14 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { siteConfig } from './src/config/site.ts';
 
 export default defineConfig({
-  site: 'https://faustocalvinio.com',
+  site: siteConfig.url,
   integrations: [sitemap({
-    filter: (page) => !page.includes('/og-card'),
+    filter: (page) => {
+      const { pathname } = new URL(page, siteConfig.url);
+      const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+      return !siteConfig.seo.sitemapExcludedPaths.includes(normalizedPath);
+    },
   })],
 });

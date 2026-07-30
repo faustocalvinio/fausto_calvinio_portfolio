@@ -1,6 +1,126 @@
 ---
-import Layout from '../../layouts/Layout.astro'; import Header from '../../components/Header.astro'; import Footer from '../../components/Footer.astro'; import N8nWorkflowShowcase from '../../components/N8nWorkflowShowcase.astro'; import PythonCodeExplorer from '../../components/PythonCodeExplorer.astro'; import { getCollection, render } from 'astro:content';
-export async function getStaticPaths(){return (await getCollection('projects')).filter(entry=>!entry.data.hidden).map(entry=>({params:{slug:entry.data.slug},props:{entry}}));}
-const {entry}=Astro.props; const {Content}=await render(entry); const isN8nProject = entry.data.slug === 'automatizaciones-n8n'; const isMultiAgentProject = entry.data.slug === 'plataforma-multi-rubro-agentes'; const hasWideVisual = isN8nProject || isMultiAgentProject;
+import { getCollection, render } from 'astro:content';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import N8nWorkflowShowcase from '../../components/N8nWorkflowShowcase.astro';
+import PythonCodeExplorer from '../../components/PythonCodeExplorer.astro';
+import Layout from '../../layouts/Layout.astro';
+import {
+  createBreadcrumbSchema,
+  createProjectSchema,
+  toAbsoluteUrl,
+} from '../../lib/seo';
+
+export async function getStaticPaths() {
+  return (await getCollection('projects'))
+    .filter((entry) => !entry.data.hidden)
+    .map((entry) => ({
+      params: { slug: entry.data.slug },
+      props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const path = `/proyectos/${entry.data.slug}/`;
+const externalUrls = Object.values(entry.data.links).filter(
+  (url): url is string => Boolean(url),
+);
+const structuredData = [
+  createProjectSchema({
+    title: entry.data.title,
+    description: entry.data.summary,
+    path,
+    category: entry.data.category,
+    stack: entry.data.stack,
+    externalUrls,
+  }),
+  createBreadcrumbSchema([
+    { name: 'Inicio', url: '/' },
+    { name: 'Proyectos', url: '/#proyectos' },
+    { name: entry.data.title, url: path },
+  ]),
+];
+
+const isN8nProject = entry.data.slug === 'automatizaciones-n8n';
+const isMultiAgentProject =
+  entry.data.slug === 'plataforma-multi-rubro-agentes';
+const hasWideVisual = isN8nProject || isMultiAgentProject;
 ---
-<Layout title={`${entry.data.title} — Fausto Calviño`} description={entry.data.summary}><Header/><main><header class="detail-hero"><div class="container"><a class="back" href="/#proyectos">← Volver a proyectos</a><p class="eyebrow">{entry.data.category} · {entry.data.year}</p><h1>{entry.data.title}</h1><p class="lede">{entry.data.summary}</p><ul class="tags">{entry.data.stack.map(t=><li>{t}</li>)}</ul></div></header><section class="section"><div class:list={['container', 'detail-content', { 'detail-content-wide': hasWideVisual }]}>{isN8nProject ? <N8nWorkflowShowcase /> : isMultiAgentProject ? <PythonCodeExplorer /> : <div class="placeholder">[ Placeholder visual · capturas, diagrama o video ]</div>}<div class="detail-copy"><div class="disclaimer">Este caso se presenta como documentación técnica y prototipo. En dominios sensibles no sustituye asesoramiento profesional.</div><h2>Problema</h2><p>{entry.data.problem}</p><h2>Solución</h2><p>{entry.data.solution}</p><Content/><h2>Estado</h2><p>{entry.data.status}</p>{(entry.data.links.live || entry.data.links.github) && <><h2>Links</h2><p>{entry.data.links.live && <a class="case-link" href={entry.data.links.live}>Ver proyecto →</a>} {entry.data.links.github && <a class="case-link" href={entry.data.links.github}>GitHub →</a>}</p></>}</div></div></section></main><Footer/></Layout>
+
+<Layout
+  title={entry.data.title}
+  description={entry.data.summary}
+  pageSchemaType="ItemPage"
+  mainEntityId={`${toAbsoluteUrl(path)}#project`}
+  structuredData={structuredData}
+>
+  <Header />
+  <main>
+    <header class="detail-hero">
+      <div class="container">
+        <a class="back" href="/#proyectos">← Volver a proyectos</a>
+        <p class="eyebrow">{entry.data.category} · {entry.data.year}</p>
+        <h1>{entry.data.title}</h1>
+        <p class="lede">{entry.data.summary}</p>
+        <ul class="tags">{entry.data.stack.map((technology) => <li>{technology}</li>)}</ul>
+      </div>
+    </header>
+
+    <section class="section">
+      <div
+        class:list={[
+          'container',
+          'detail-content',
+          { 'detail-content-wide': hasWideVisual },
+        ]}
+      >
+        {
+          isN8nProject ? (
+            <N8nWorkflowShowcase />
+          ) : isMultiAgentProject ? (
+            <PythonCodeExplorer />
+          ) : (
+            <div class="placeholder">
+              [ Placeholder visual · capturas, diagrama o video ]
+            </div>
+          )
+        }
+
+        <div class="detail-copy">
+          <div class="disclaimer">
+            Este caso se presenta como documentación técnica y prototipo. En
+            dominios sensibles no sustituye asesoramiento profesional.
+          </div>
+          <h2>Problema</h2>
+          <p>{entry.data.problem}</p>
+          <h2>Solución</h2>
+          <p>{entry.data.solution}</p>
+          <Content />
+          <h2>Estado</h2>
+          <p>{entry.data.status}</p>
+          {
+            (entry.data.links.live || entry.data.links.github) && (
+              <>
+                <h2>Links</h2>
+                <p>
+                  {entry.data.links.live && (
+                    <a class="case-link" href={entry.data.links.live}>
+                      Ver proyecto →
+                    </a>
+                  )}{' '}
+                  {entry.data.links.github && (
+                    <a class="case-link" href={entry.data.links.github}>
+                      GitHub →
+                    </a>
+                  )}
+                </p>
+              </>
+            )
+          }
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>

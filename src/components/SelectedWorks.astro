@@ -1,0 +1,148 @@
+---
+import { getCollection } from 'astro:content';
+import { selectedWorksConfig as config } from '../config/selected-works';
+
+const allProjects = await getCollection('projects');
+const publicProjects = allProjects.filter((project) => !project.data.hidden);
+
+const projects =
+  config.selection.mode === 'manual'
+    ? config.selection.slugs.map((slug) => {
+        const project = allProjects.find((entry) => entry.data.slug === slug);
+
+        if (!project) {
+          throw new Error(
+            `El proyecto "${slug}" configurado en selected-works.ts no existe.`,
+          );
+        }
+
+        return project;
+      }).filter((project) => !project.data.hidden)
+    : publicProjects
+        .sort(
+          (a, b) =>
+            Number(b.data.featured) - Number(a.data.featured) ||
+            b.data.year.localeCompare(a.data.year),
+        )
+        .slice(0, config.selection.limit);
+---
+
+<section class="section section-alt" id={config.id}>
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">{config.eyebrow}</p>
+      <h2>{config.title}</h2>
+      <p class="lede">{config.description}</p>
+    </div>
+
+    <div class="case-list">
+      {
+        projects.map((project) => (
+          <article class="case">
+            <div>
+              <h3>{project.data.title}</h3>
+              <p class="case-meta">
+                {project.data.category} · {project.data.year} · {project.data.status}
+              </p>
+            </div>
+            <div>
+              <p>{project.data.summary}</p>
+              <ul class="tags">
+                {project.data.stack
+                  .slice(0, config.stackLimit)
+                  .map((technology) => <li>{technology}</li>)}
+              </ul>
+              <a
+                class="project-case-link"
+                href={`/proyectos/${project.data.slug}/`}
+              >
+                <span>{config.ctaLabel}</span>
+                <i aria-hidden="true">→</i>
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .project-case-link {
+    --case-text: #123458;
+    --case-line: #bdc9d9;
+    --case-accent: #1f518f;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 1.35rem;
+    padding: 0.35rem 0 0.67rem;
+    color: var(--case-text);
+    font-size: 1.148rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    text-decoration: none;
+    transition: color 0.22s ease;
+  }
+
+  .project-case-link::before,
+  .project-case-link::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1.4px;
+    content: '';
+  }
+
+  .project-case-link::before {
+    background: var(--case-line);
+  }
+
+  .project-case-link::after {
+    background: var(--case-accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.28s ease;
+  }
+
+  .project-case-link i {
+    font-size: 1.4rem;
+    font-style: normal;
+    line-height: 1;
+    transition: transform 0.22s ease;
+  }
+
+  .project-case-link:hover,
+  .project-case-link:focus-visible {
+    color: var(--case-accent);
+  }
+
+  .project-case-link:hover::after,
+  .project-case-link:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .project-case-link:hover i,
+  .project-case-link:focus-visible i {
+    transform: translateX(5.6px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .project-case-link {
+      --case-text: #a5c9eb;
+      --case-line: #263548;
+      --case-accent: #70ace1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-case-link,
+    .project-case-link::after,
+    .project-case-link i {
+      transition: none;
+    }
+  }
+</style>

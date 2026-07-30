@@ -1,0 +1,43 @@
+@media (pointer: fine) {
+  html,
+  body {
+    cursor: url('/cursor-png.png') 5 1, auto;
+  }
+
+  a[href],
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label[for],
+  [role='button']:not([aria-disabled='true']),
+  input[type='button']:not(:disabled),
+  input[type='submit']:not(:disabled),
+  input[type='reset']:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='file']:not(:disabled),
+  input[type='color']:not(:disabled),
+  input[type='range']:not(:disabled) {
+    cursor: url('/hand-pointer.png') 7 0, pointer;
+  }
+
+  input:not([type]),
+  input[type='text'],
+  input[type='email'],
+  input[type='search'],
+  input[type='tel'],
+  input[type='url'],
+  input[type='password'],
+  input[type='number'],
+  textarea,
+  [contenteditable='true'] {
+    cursor: text;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}

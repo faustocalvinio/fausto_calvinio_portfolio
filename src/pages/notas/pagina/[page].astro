@@ -1,12 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
 import NotesIndex from '../../../components/NotesIndex.astro';
+import { siteConfig } from '../../../config/site';
 
-const pageSize = 10;
+const pageSize = siteConfig.content.notesPerPage;
 
 export async function getStaticPaths() {
   const articleCount = (await getCollection('articles')).filter((article) => article.data.status !== 'draft').length;
-  const totalPages = Math.ceil(articleCount / 10);
+  const totalPages = Math.ceil(articleCount / siteConfig.content.notesPerPage);
   return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({ params: { page: String(index + 2) } }));
 }
 

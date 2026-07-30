@@ -1,1 +1,19 @@
-export function GET({site}){return new Response(`User-agent: *\nAllow: /\nSitemap: ${new URL('sitemap-index.xml',site)}`)}
+import type { APIRoute } from 'astro';
+import { siteConfig } from '../config/site';
+
+export const GET: APIRoute = ({ site }) => {
+  const siteUrl = site ?? new URL(siteConfig.url);
+  const body = [
+    'User-agent: *',
+    'Allow: /',
+    `Sitemap: ${new URL('/sitemap-index.xml', siteUrl).href}`,
+    '',
+  ].join('\n');
+
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=86400',
+    },
+  });
+};
