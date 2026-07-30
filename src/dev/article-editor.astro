@@ -1,0 +1,1903 @@
+---
+import { stat } from 'node:fs/promises';
+import path from 'node:path';
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+
+const articleEntries = await getCollection('articles');
+const draftEntries = articleEntries
+  .filter((entry) => entry.data.status === 'draft')
+  .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt));
+
+const drafts = await Promise.all(
+  draftEntries.map(async (entry) => {
+    const filePath =
+      entry.filePath ?? `src/content/articles/${entry.data.slug}.md`;
+    const fileStat = await stat(path.resolve(filePath));
+
+    return {
+      fileName: path.basename(filePath),
+      mtimeMs: fileStat.mtimeMs,
+      data: entry.data,
+      body: entry.body ?? '',
+    };
+  }),
+);
+const articleIndex = articleEntries.map((entry) => ({
+  fileName: path.basename(
+    entry.filePath ?? `src/content/articles/${entry.data.slug}.md`,
+  ),
+  slug: entry.data.slug,
+  status: entry.data.status,
+  externalUrl: entry.data.externalUrl,
+}));
+
+const dateParts = new Intl.DateTimeFormat('en', {
+  timeZone: 'America/Argentina/Buenos_Aires',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).formatToParts(new Date());
+const datePart = (type: 'year' | 'month' | 'day') =>
+  dateParts.find((part) => part.type === type)?.value ?? '';
+const today = `${datePart('year')}-${datePart('month')}-${datePart('day')}`;
+const serializedEditorData = JSON.stringify({ drafts, articleIndex }).replace(
+  /</g,
+  '\\u003c',
+);
+---
+
+<Layout
+  title="Mesa editorial"
+  titleTemplate={false}
+  description="Herramienta local para crear y editar notas del portfolio."
+  noindex
+  nofollow
+>
+  <header class="editor-header">
+    <div class="editor-shell editor-header-inner">
+      <a class="editor-brand" href="/" aria-label="Volver al portfolio">
+        <span class="editor-brand-mark" aria-hidden="true"></span>
+        <span>Mesa editorial</span>
+      </a>
+      <div class="development-label">
+        <span aria-hidden="true"></span>
+        Solo desarrollo
+      </div>
+      <a class="site-link" href="/">Ver portfolio <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main class="editor-main">
+    <div class="editor-shell">
+      <section class="editor-intro" aria-labelledby="editor-title">
+        <div>
+          <p class="editor-kicker">Notas · Markdown</p>
+          <h1 id="editor-title">Escribir con la estructura resuelta.</h1>
+        </div>
+        <p>
+          Completá los datos, redactá el contenido y guardalo directamente en
+          la colección del portfolio.
+        </p>
+      </section>
+
+      <section class="draft-strip" aria-labelledby="drafts-title">
+        <div>
+          <p class="field-label" id="drafts-title">Borradores existentes</p>
+          <p class="field-hint">Solo los borradores pueden reabrirse desde esta herramienta.</p>
+        </div>
+        <div class="draft-actions">
+          <label class="sr-only" for="draft-picker">Seleccionar borrador</label>
+          <select id="draft-picker">
+            <option value="">Seleccionar un borrador…</option>
+            {
+              drafts.map((draft) => (
+                <option value={draft.fileName}>
+                  {draft.data.publishedAt} · {draft.data.title}
+                </option>
+              ))
+            }
+          </select>
+          <button class="desk-button desk-button-quiet" id="new-article" type="button">
+            + Nueva nota
+          </button>
+        </div>
+      </section>
+
+      <aside class="recovery-banner" id="recovery-banner" hidden aria-live="polite">
+        <div>
+          <strong>Hay cambios locales sin guardar.</strong>
+          <span id="recovery-description"></span>
+        </div>
+        <div class="recovery-actions">
+          <button class="text-button" id="recover-local" type="button">Recuperar</button>
+          <button class="text-button" id="discard-local" type="button">Descartar</button>
+        </div>
+      </aside>
+
+      <form id="article-form" data-today={today} novalidate>
+        <section class="metadata-section" aria-labelledby="metadata-title">
+          <div class="section-caption">
+            <span>01</span>
+            <div>
+              <h2 id="metadata-title">Ficha editorial</h2>
+              <p>Estos campos forman el frontmatter de la nota.</p>
+            </div>
+          </div>
+
+          <div class="metadata-grid">
+            <div class="field field-title">
+              <label for="title">Título</label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                maxlength="180"
+                autocomplete="off"
+                placeholder="Una idea clara y específica"
+                required
+              />
+            </div>
+
+            <div class="field field-slug">
+              <label for="slug">Slug</label>
+              <div class="input-prefix">
+                <span>/notas/</span>
+                <input
+                  id="slug"
+                  name="slug"
+                  type="text"
+                  maxlength="120"
+                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                  autocomplete="off"
+                  placeholder="titulo-de-la-nota"
+                  required
+                />
+              </div>
+              <p class="field-hint" id="slug-hint">Se genera desde el título y podés ajustarlo antes de crear el archivo.</p>
+            </div>
+
+            <div class="field field-excerpt">
+              <div class="label-row">
+                <label for="excerpt">Resumen</label>
+                <span id="excerpt-count">0 / 420</span>
+              </div>
+              <textarea
+                id="excerpt"
+                name="excerpt"
+                rows="3"
+                maxlength="420"
+                placeholder="Qué va a encontrar la persona que abra esta nota."
+                required
+              ></textarea>
+            </div>
+
+            <div class="field">
+              <label for="published-at">Fecha</label>
+              <input id="published-at" name="publishedAt" type="date" required />
+            </div>
+
+            <div class="field">
+              <label for="article-status">Estado</label>
+              <select id="article-status" name="status">
+                <option value="draft">Borrador</option>
+                <option value="published">Publicado</option>
+                <option value="placeholder">Placeholder</option>
+              </select>
+            </div>
+
+            <div class="field field-tags">
+              <label for="tag-input">Etiquetas</label>
+              <div class="tag-editor" id="tag-editor">
+                <div class="tag-list" id="tag-list" aria-live="polite"></div>
+                <input
+                  id="tag-input"
+                  type="text"
+                  maxlength="50"
+                  autocomplete="off"
+                  placeholder="IA aplicada, Astro…"
+                  aria-describedby="tags-hint"
+                />
+              </div>
+              <p class="field-hint" id="tags-hint">Enter o coma para agregar. Máximo 20.</p>
+            </div>
+
+            <div class="field field-cover">
+              <label for="cover">Portada</label>
+              <input
+                id="cover"
+                name="cover"
+                type="text"
+                maxlength="500"
+                autocomplete="off"
+                placeholder="/imagenes/nota.webp o https://…"
+              />
+              <p class="field-hint">Ruta dentro de public o URL http(s).</p>
+              <figure class="cover-preview" id="cover-preview" hidden>
+                <img id="cover-preview-image" alt="" />
+                <figcaption>Vista previa de portada</figcaption>
+              </figure>
+            </div>
+
+            <div class="field field-external">
+              <label for="external-url">Enlace externo <span>Opcional</span></label>
+              <input
+                id="external-url"
+                name="externalUrl"
+                type="url"
+                maxlength="500"
+                inputmode="url"
+                autocomplete="url"
+                placeholder="https://…"
+              />
+              <p class="field-hint">Si existe, la tarjeta de la nota abrirá este enlace.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="writing-section" aria-labelledby="writing-title">
+          <div class="section-caption">
+            <span>02</span>
+            <div>
+              <h2 id="writing-title">Cuerpo y vista previa</h2>
+              <p>El título ya funciona como H1; empezá el contenido desde H2.</p>
+            </div>
+          </div>
+
+          <div class="writing-grid">
+            <section class="writing-pane" aria-label="Editor Markdown">
+              <div class="pane-heading">
+                <div>
+                  <strong>Markdown</strong>
+                  <span id="writing-mode">Nueva nota</span>
+                </div>
+                <span id="body-count">0 palabras · 0 caracteres</span>
+              </div>
+
+              <div class="markdown-toolbar" role="toolbar" aria-label="Formato Markdown">
+                <button type="button" data-format="heading" title="Título de nivel 2">H2</button>
+                <button type="button" data-format="bold" title="Negrita (Ctrl+B)"><strong>B</strong></button>
+                <button type="button" data-format="italic" title="Cursiva (Ctrl+I)"><em>I</em></button>
+                <button type="button" data-format="link" title="Enlace (Ctrl+K)">Enlace</button>
+                <button type="button" data-format="quote" title="Cita">“ ”</button>
+                <button type="button" data-format="list" title="Lista">Lista</button>
+                <button type="button" data-format="code" title="Bloque de código">&lt;/&gt;</button>
+                <button type="button" data-format="image" title="Imagen">Imagen</button>
+              </div>
+
+              <label class="sr-only" for="body">Contenido Markdown</label>
+              <textarea
+                id="body"
+                name="body"
+                spellcheck="true"
+                placeholder="## Primera sección&#10;&#10;Desarrollá la idea…"
+              ></textarea>
+            </section>
+
+            <section class="output-pane" aria-label="Resultado">
+              <div class="output-tabs" role="tablist" aria-label="Resultado del artículo">
+                <button
+                  id="preview-tab"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="preview-panel"
+                >
+                  Vista previa
+                </button>
+                <button
+                  id="file-tab"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="file-panel"
+                >
+                  Archivo .md
+                </button>
+                <button class="copy-button" id="copy-markdown" type="button">Copiar</button>
+              </div>
+
+              <div id="preview-panel" role="tabpanel" aria-labelledby="preview-tab">
+                <div class="preview-state" id="preview-state">Preparando vista previa…</div>
+                <iframe
+                  id="preview-frame"
+                  title="Vista previa renderizada del artículo"
+                  sandbox=""
+                ></iframe>
+              </div>
+              <div id="file-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
+                <pre id="generated-markdown" tabindex="0"></pre>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <footer class="save-bar">
+          <div class="save-feedback" id="save-feedback" aria-live="polite">
+            Completá los campos para crear el archivo.
+          </div>
+          <div class="save-actions">
+            <a
+              class="desk-button desk-button-quiet"
+              id="open-article"
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              hidden
+            >
+              Abrir nota <span aria-hidden="true">↗</span>
+            </a>
+            <button class="desk-button desk-button-primary" id="save-article" type="submit">
+              Crear archivo
+            </button>
+          </div>
+        </footer>
+      </form>
+    </div>
+  </main>
+
+  <script id="draft-data" type="application/json" set:html={serializedEditorData}></script>
+
+  <script>
+    const initialEditorData = JSON.parse(
+      document.querySelector('#draft-data')?.textContent ?? '[]',
+    );
+    const draftData = initialEditorData.drafts ?? [];
+    const articleIndex = initialEditorData.articleIndex ?? [];
+    const STORAGE_KEY = 'fausto-article-editor-v1';
+    const PENDING_SAVE_KEY = 'fausto-article-editor-pending-save-v1';
+    const API_ROOT = '/__dev/article-editor';
+
+    const byId = (id) => document.getElementById(id);
+    const form = byId('article-form');
+    const titleInput = byId('title');
+    const slugInput = byId('slug');
+    const excerptInput = byId('excerpt');
+    const dateInput = byId('published-at');
+    const statusInput = byId('article-status');
+    const tagInput = byId('tag-input');
+    const tagList = byId('tag-list');
+    const coverInput = byId('cover');
+    const externalUrlInput = byId('external-url');
+    const bodyInput = byId('body');
+    const draftPicker = byId('draft-picker');
+    const saveButton = byId('save-article');
+    const saveFeedback = byId('save-feedback');
+    const openArticle = byId('open-article');
+    const generatedMarkdown = byId('generated-markdown');
+    const previewFrame = byId('preview-frame');
+    const previewState = byId('preview-state');
+    const recoveryBanner = byId('recovery-banner');
+
+    const state = {
+      mode: 'create',
+      sourceFile: null,
+      expectedMtimeMs: null,
+      slugTouched: false,
+      tags: [],
+      baseline: '',
+      previewTimer: null,
+      previewController: null,
+      storageTimer: null,
+      saveLocked: false,
+    };
+
+    const slugify = (value) =>
+      value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-{2,}/g, '-')
+        .slice(0, 120)
+        .replace(/-+$/g, '');
+
+    const escapeHtml = (value) =>
+      String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+    const collectArticle = () => ({
+      title: titleInput.value.trim(),
+      slug: slugInput.value.trim(),
+      excerpt: excerptInput.value.trim(),
+      publishedAt: dateInput.value,
+      status: statusInput.value,
+      tags: [...state.tags],
+      cover: coverInput.value.trim() || null,
+      externalUrl: externalUrlInput.value.trim() || undefined,
+      body: bodyInput.value.replace(/\r\n?/g, '\n').trimEnd(),
+    });
+
+    const quoteYaml = (value) => JSON.stringify(value);
+    const serializeArticle = (article) => {
+      const frontmatter = [
+        '---',
+        `title: ${quoteYaml(article.title)}`,
+        `slug: ${article.slug}`,
+        `excerpt: ${quoteYaml(article.excerpt)}`,
+        `publishedAt: ${quoteYaml(article.publishedAt)}`,
+        `status: ${article.status}`,
+        `tags: [${article.tags.map(quoteYaml).join(', ')}]`,
+        `cover: ${article.cover ? quoteYaml(article.cover) : 'null'}`,
+        ...(article.externalUrl
+          ? [`externalUrl: ${quoteYaml(article.externalUrl)}`]
+          : []),
+        '---',
+        '',
+      ].join('\n');
+      return `${frontmatter}${article.body}${article.body ? '\n' : ''}`;
+    };
+
+    const snapshot = () =>
+      JSON.stringify({
+        mode: state.mode,
+        sourceFile: state.sourceFile,
+        expectedMtimeMs: state.expectedMtimeMs,
+        article: collectArticle(),
+      });
+
+    const isDirty = () => snapshot() !== state.baseline;
+
+    const setFeedback = (message, tone = '') => {
+      saveFeedback.textContent = message;
+      saveFeedback.dataset.tone = tone;
+    };
+
+    const updateSaveState = () => {
+      const dirty = isDirty();
+      saveButton.disabled = state.saveLocked || !dirty;
+      saveButton.textContent =
+        state.mode === 'update' ? 'Guardar cambios' : 'Crear archivo';
+      if (dirty && !state.saveLocked) {
+        setFeedback('Hay cambios sin guardar.', 'pending');
+      } else if (!state.saveLocked && !saveFeedback.dataset.tone) {
+        setFeedback('Completá los campos para crear el archivo.');
+      }
+    };
+
+    const setBaseline = () => {
+      state.baseline = snapshot();
+      saveButton.disabled = true;
+      saveButton.textContent =
+        state.mode === 'update' ? 'Guardar cambios' : 'Crear archivo';
+    };
+
+    const renderTags = () => {
+      tagList.replaceChildren(
+        ...state.tags.map((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'tag-chip';
+          chip.textContent = tag;
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.setAttribute('aria-label', `Quitar etiqueta ${tag}`);
+          remove.textContent = '×';
+          remove.addEventListener('click', () => {
+            state.tags = state.tags.filter((item) => item !== tag);
+            renderTags();
+            handleChange();
+          });
+          chip.append(remove);
+          return chip;
+        }),
+      );
+    };
+
+    const addTags = (rawValue) => {
+      const additions = rawValue
+        .split(/[,\n]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+      const seen = new Set(state.tags.map((tag) => tag.toLocaleLowerCase('es')));
+
+      for (const tag of additions) {
+        const key = tag.toLocaleLowerCase('es');
+        if (!seen.has(key) && state.tags.length < 20) {
+          state.tags.push(tag.slice(0, 50));
+          seen.add(key);
+        }
+      }
+      tagInput.value = '';
+      renderTags();
+    };
+
+    const updateCounts = () => {
+      byId('excerpt-count').textContent = `${excerptInput.value.length} / 420`;
+      const content = bodyInput.value.trim();
+      const words = content ? content.split(/\s+/).length : 0;
+      byId('body-count').textContent =
+        `${words} ${words === 1 ? 'palabra' : 'palabras'} · ${bodyInput.value.length} caracteres`;
+    };
+
+    const updateCoverPreview = () => {
+      const wrapper = byId('cover-preview');
+      const image = byId('cover-preview-image');
+      const source = coverInput.value.trim();
+      if (!source || (!source.startsWith('/') && !/^https?:\/\//i.test(source))) {
+        wrapper.hidden = true;
+        image.removeAttribute('src');
+        return;
+      }
+      image.onerror = () => {
+        wrapper.hidden = true;
+      };
+      image.src = source;
+      image.alt = titleInput.value
+        ? `Portada para ${titleInput.value}`
+        : 'Vista previa de portada';
+      wrapper.hidden = false;
+    };
+
+    const updateGeneratedFile = () => {
+      generatedMarkdown.textContent = serializeArticle(collectArticle());
+    };
+
+    const previewDocument = (renderedBody) => {
+      const article = collectArticle();
+      const tags = article.tags.length
+        ? `<ul class="preview-tags">${article.tags
+            .map((tag) => `<li>${escapeHtml(tag)}</li>`)
+            .join('')}</ul>`
+        : '';
+      const cover = article.cover
+        ? `<img class="preview-cover" src="${escapeHtml(article.cover)}" alt="">`
+        : '';
+
+      return `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <base target="_blank">
+  <style>
+    :root{color-scheme:light dark;--bg:#f5f8fb;--bg-alt:#e9eff5;--ink:#091420;--soft:#1a2b3d;--muted:#4d6278;--line:#d6e0ec;--accent:#1f518f;--tint:#e4edf6}
+    @media(prefers-color-scheme:dark){:root{--bg:#060d16;--bg-alt:#0d1622;--ink:#e2e8f0;--soft:#bac8d6;--muted:#7f91a8;--line:#263548;--accent:#70ace1;--tint:#111c2b}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,sans-serif}
+    header{padding:clamp(2rem,7vw,4.5rem) clamp(1.25rem,7vw,4rem);border-bottom:1px solid var(--line)}
+    .meta{margin:0 0 1rem;color:var(--muted);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase}
+    h1,h2,h3{font-family:Georgia,serif;font-weight:400;line-height:1.08;letter-spacing:-.02em}
+    h1{max-width:18ch;margin:0 0 1rem;font-size:clamp(2.2rem,7vw,4.3rem)}.lede{max-width:58ch;color:var(--soft);font-size:1.08rem}
+    .preview-tags{display:flex;flex-wrap:wrap;gap:.4rem;list-style:none;margin:1.5rem 0 0;padding:0}.preview-tags li{padding:.25rem .55rem;background:var(--tint);border:1px solid var(--line);color:var(--accent);font-size:.72rem}
+    .preview-cover{width:100%;max-height:420px;object-fit:cover;border-bottom:1px solid var(--line)}
+    article{max-width:760px;margin:auto;padding:clamp(2rem,7vw,4.5rem) clamp(1.25rem,6vw,3rem)}
+    article h2{margin:3rem 0 1rem;font-size:2rem}article h3{margin:2.2rem 0 .8rem;font-size:1.45rem}
+    article p,article li{color:var(--soft)}article a{color:var(--accent);text-underline-offset:3px}
+    article blockquote{margin:2rem 0;padding:.6rem 1.25rem;border-left:3px solid var(--accent);background:var(--tint)}
+    article pre{overflow:auto;padding:1rem;background:var(--bg-alt);border:1px solid var(--line);font-size:.85rem}
+    article :not(pre)>code{padding:.12rem .3rem;background:var(--bg-alt);border:1px solid var(--line)}
+    article table{width:100%;border-collapse:collapse;margin:2rem 0}article th,article td{padding:.7rem;border:1px solid var(--line);text-align:left}
+    article img{max-width:100%;height:auto}
+    .empty{color:var(--muted);font-style:italic}
+  </style>
+</head>
+<body>
+  <header>
+    <p class="meta">${escapeHtml(article.publishedAt || 'Sin fecha')} · ${escapeHtml(article.status)}</p>
+    <h1>${escapeHtml(article.title || 'Título de la nota')}</h1>
+    <p class="lede">${escapeHtml(article.excerpt || 'El resumen aparecerá en este espacio.')}</p>
+    ${tags}
+  </header>
+  ${cover}
+  <article>${renderedBody || '<p class="empty">Empezá a escribir para ver el contenido renderizado.</p>'}</article>
+</body>
+</html>`;
+    };
+
+    const renderPreview = async () => {
+      state.previewController?.abort();
+      state.previewController = new AbortController();
+      previewState.hidden = false;
+      previewState.textContent = 'Actualizando vista previa…';
+
+      try {
+        const response = await fetch(`${API_ROOT}/preview`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: bodyInput.value }),
+          signal: state.previewController.signal,
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'No se pudo renderizar.');
+        previewFrame.srcdoc = previewDocument(result.html);
+        previewState.hidden = true;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        previewState.hidden = false;
+        previewState.textContent = error.message;
+      }
+    };
+
+    const schedulePreview = () => {
+      window.clearTimeout(state.previewTimer);
+      state.previewTimer = window.setTimeout(renderPreview, 320);
+    };
+
+    const saveLocalRecovery = () => {
+      window.clearTimeout(state.storageTimer);
+      state.storageTimer = window.setTimeout(() => {
+        if (!isDirty()) return;
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            mode: state.mode,
+            sourceFile: state.sourceFile,
+            expectedMtimeMs: state.expectedMtimeMs,
+            article: collectArticle(),
+            savedAt: new Date().toISOString(),
+          }),
+        );
+      }, 350);
+    };
+
+    const handleChange = () => {
+      updateCounts();
+      updateCoverPreview();
+      updateGeneratedFile();
+      updateSaveState();
+      schedulePreview();
+      saveLocalRecovery();
+    };
+
+    const fillArticle = (article) => {
+      titleInput.value = article.title ?? '';
+      slugInput.value = article.slug ?? '';
+      excerptInput.value = article.excerpt ?? '';
+      dateInput.value = article.publishedAt ?? form.dataset.today;
+      statusInput.value = article.status ?? 'draft';
+      coverInput.value = article.cover ?? '';
+      externalUrlInput.value = article.externalUrl ?? '';
+      bodyInput.value = article.body ?? '';
+      state.tags = Array.isArray(article.tags) ? [...article.tags] : [];
+      renderTags();
+      handleChange();
+    };
+
+    const confirmDiscard = () =>
+      !isDirty() || window.confirm('Hay cambios sin guardar. ¿Querés descartarlos?');
+
+    const startNewArticle = (
+      skipConfirmation = false,
+      preserveRecovery = false,
+    ) => {
+      if (!skipConfirmation && !confirmDiscard()) return false;
+      form.reset();
+      state.mode = 'create';
+      state.sourceFile = null;
+      state.expectedMtimeMs = null;
+      state.slugTouched = false;
+      state.tags = [];
+      state.saveLocked = false;
+      dateInput.value = form.dataset.today;
+      statusInput.value = 'draft';
+      slugInput.readOnly = false;
+      slugInput.setAttribute('aria-describedby', 'slug-hint');
+      byId('slug-hint').textContent =
+        'Se genera desde el título y podés ajustarlo antes de crear el archivo.';
+      draftPicker.value = '';
+      byId('writing-mode').textContent = 'Nueva nota';
+      openArticle.hidden = true;
+      renderTags();
+      updateCounts();
+      updateCoverPreview();
+      updateGeneratedFile();
+      if (!preserveRecovery) localStorage.removeItem(STORAGE_KEY);
+      setFeedback('Completá los campos para crear el archivo.');
+      setBaseline();
+      schedulePreview();
+      return true;
+    };
+
+    const loadDraft = (draft, skipConfirmation = false) => {
+      if (!draft || (!skipConfirmation && !confirmDiscard())) return false;
+      state.mode = 'update';
+      state.sourceFile = draft.fileName;
+      state.expectedMtimeMs = draft.mtimeMs;
+      state.slugTouched = true;
+      state.saveLocked = false;
+      slugInput.readOnly = true;
+      byId('slug-hint').textContent =
+        'El slug queda bloqueado al editar un borrador existente.';
+      draftPicker.value = draft.fileName;
+      byId('writing-mode').textContent = `Editando ${draft.fileName}`;
+      openArticle.hidden = true;
+      fillArticle({ ...draft.data, body: draft.body });
+      localStorage.removeItem(STORAGE_KEY);
+      setBaseline();
+      setFeedback(`Borrador cargado: ${draft.fileName}.`);
+      return true;
+    };
+
+    const validateForm = () => {
+      tagInput.value = tagInput.value.trim();
+      if (tagInput.value) addTags(tagInput.value);
+
+      slugInput.setCustomValidity(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugInput.value)
+          ? ''
+          : 'Usá solo minúsculas, números y guiones simples.',
+      );
+
+      const cover = coverInput.value.trim();
+      coverInput.setCustomValidity(
+        !cover || cover.startsWith('/') || /^https?:\/\//i.test(cover)
+          ? ''
+          : 'Ingresá una ruta que empiece con / o una URL http(s).',
+      );
+
+      bodyInput.setCustomValidity(
+        bodyInput.value.trim() || externalUrlInput.value.trim()
+          ? ''
+          : 'Escribí el contenido o indicá un enlace externo.',
+      );
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setFeedback('Revisá los campos marcados antes de guardar.', 'error');
+        return false;
+      }
+      return true;
+    };
+
+    const upsertDraftData = (article, result) => {
+      const existingIndex = draftData.findIndex(
+        (draft) => draft.fileName === result.fileName,
+      );
+      const nextDraft = {
+        fileName: result.fileName,
+        mtimeMs: result.mtimeMs,
+        data: { ...article, body: undefined },
+        body: article.body,
+      };
+
+      if (article.status === 'draft') {
+        if (existingIndex >= 0) draftData[existingIndex] = nextDraft;
+        else draftData.unshift(nextDraft);
+
+        let option = [...draftPicker.options].find(
+          (item) => item.value === result.fileName,
+        );
+        if (!option) {
+          option = document.createElement('option');
+          option.value = result.fileName;
+          draftPicker.append(option);
+        }
+        option.textContent = `${article.publishedAt} · ${article.title}`;
+        draftPicker.value = result.fileName;
+      } else {
+        if (existingIndex >= 0) draftData.splice(existingIndex, 1);
+        [...draftPicker.options]
+          .find((item) => item.value === result.fileName)
+          ?.remove();
+        draftPicker.value = '';
+      }
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (state.saveLocked || !validateForm()) return;
+
+      saveButton.disabled = true;
+      saveButton.textContent = 'Guardando…';
+      setFeedback('Escribiendo el archivo en la colección…', 'pending');
+      const article = collectArticle();
+      localStorage.setItem(
+        PENDING_SAVE_KEY,
+        JSON.stringify({
+          article,
+          mode: state.mode,
+          sourceFile: state.sourceFile,
+          startedAt: new Date().toISOString(),
+        }),
+      );
+
+      try {
+        const response = await fetch(`${API_ROOT}/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: state.mode,
+            sourceFile: state.sourceFile,
+            expectedMtimeMs: state.expectedMtimeMs,
+            article,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'No se pudo guardar.');
+
+        state.mode = 'update';
+        state.sourceFile = result.fileName;
+        state.expectedMtimeMs = result.mtimeMs;
+        state.slugTouched = true;
+        slugInput.readOnly = true;
+        upsertDraftData(article, result);
+
+        localStorage.removeItem(STORAGE_KEY);
+        window.setTimeout(
+          () => localStorage.removeItem(PENDING_SAVE_KEY),
+          3000,
+        );
+        recoveryBanner.hidden = true;
+        state.saveLocked = article.status !== 'draft';
+        byId('writing-mode').textContent =
+          article.status === 'draft'
+            ? `Editando ${result.fileName}`
+            : `${result.fileName} guardado como ${article.status}`;
+        byId('slug-hint').textContent =
+          'El slug queda bloqueado después de crear el archivo.';
+
+        const destination = result.route ?? article.externalUrl;
+        if (destination) {
+          openArticle.href = destination;
+          openArticle.hidden = false;
+        }
+
+        saveFeedback.dataset.tone = 'success';
+        setFeedback(
+          article.status === 'draft'
+            ? `Borrador guardado en src/content/articles/${result.fileName}.`
+            : `Artículo guardado como ${article.status}. Para editarlo de nuevo, cambialo a draft.`,
+          'success',
+        );
+        setBaseline();
+        if (state.saveLocked) saveButton.disabled = true;
+      } catch (error) {
+        localStorage.removeItem(PENDING_SAVE_KEY);
+        setFeedback(error.message, 'error');
+        saveButton.disabled = false;
+        saveButton.textContent =
+          state.mode === 'update' ? 'Guardar cambios' : 'Crear archivo';
+      }
+    });
+
+    form.addEventListener('input', (event) => {
+      if (event.target === titleInput && !state.slugTouched && !slugInput.readOnly) {
+        slugInput.value = slugify(titleInput.value);
+      }
+      if (event.target === slugInput) state.slugTouched = true;
+      handleChange();
+    });
+
+    slugInput.addEventListener('blur', () => {
+      if (!slugInput.readOnly) slugInput.value = slugify(slugInput.value);
+      handleChange();
+    });
+
+    tagInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ',') {
+        event.preventDefault();
+        if (tagInput.value.trim()) {
+          addTags(tagInput.value);
+          handleChange();
+        }
+      }
+      if (event.key === 'Backspace' && !tagInput.value && state.tags.length) {
+        state.tags.pop();
+        renderTags();
+        handleChange();
+      }
+    });
+    tagInput.addEventListener('blur', () => {
+      if (tagInput.value.trim()) {
+        addTags(tagInput.value);
+        handleChange();
+      }
+    });
+
+    draftPicker.addEventListener('change', () => {
+      if (!draftPicker.value) return;
+      const draft = draftData.find((item) => item.fileName === draftPicker.value);
+      if (!loadDraft(draft)) {
+        draftPicker.value = state.sourceFile ?? '';
+      }
+    });
+
+    byId('new-article').addEventListener('click', () => startNewArticle());
+
+    const wrapSelection = (before, after, fallback) => {
+      const start = bodyInput.selectionStart;
+      const end = bodyInput.selectionEnd;
+      const selected = bodyInput.value.slice(start, end) || fallback;
+      bodyInput.setRangeText(`${before}${selected}${after}`, start, end, 'select');
+      bodyInput.focus();
+      bodyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    const prefixLines = (prefix, fallback) => {
+      const start = bodyInput.selectionStart;
+      const end = bodyInput.selectionEnd;
+      const selected = bodyInput.value.slice(start, end) || fallback;
+      const formatted = selected
+        .split('\n')
+        .map((line) => `${prefix}${line}`)
+        .join('\n');
+      bodyInput.setRangeText(formatted, start, end, 'select');
+      bodyInput.focus();
+      bodyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    const applyFormat = (format) => {
+      if (format === 'heading') prefixLines('## ', 'Título de sección');
+      if (format === 'bold') wrapSelection('**', '**', 'texto destacado');
+      if (format === 'italic') wrapSelection('_', '_', 'texto');
+      if (format === 'link') wrapSelection('[', '](https://ejemplo.com)', 'texto del enlace');
+      if (format === 'quote') prefixLines('> ', 'Idea para destacar');
+      if (format === 'list') prefixLines('- ', 'Primer elemento');
+      if (format === 'code') wrapSelection('```js\n', '\n```', 'const ejemplo = true;');
+      if (format === 'image') {
+        wrapSelection('![', '](/imagenes/nota.webp)', 'Texto alternativo');
+      }
+    };
+
+    document.querySelectorAll('[data-format]').forEach((button) => {
+      button.addEventListener('click', () => applyFormat(button.dataset.format));
+    });
+
+    bodyInput.addEventListener('keydown', (event) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const key = event.key.toLowerCase();
+      if (!['b', 'i', 'k'].includes(key)) return;
+      event.preventDefault();
+      applyFormat(key === 'b' ? 'bold' : key === 'i' ? 'italic' : 'link');
+    });
+
+    const selectOutputTab = (tab) => {
+      const previewSelected = tab === 'preview';
+      byId('preview-tab').setAttribute('aria-selected', String(previewSelected));
+      byId('file-tab').setAttribute('aria-selected', String(!previewSelected));
+      byId('preview-panel').hidden = !previewSelected;
+      byId('file-panel').hidden = previewSelected;
+      if (!previewSelected) updateGeneratedFile();
+    };
+    byId('preview-tab').addEventListener('click', () => selectOutputTab('preview'));
+    byId('file-tab').addEventListener('click', () => selectOutputTab('file'));
+
+    byId('copy-markdown').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(serializeArticle(collectArticle()));
+        setFeedback('Markdown copiado al portapapeles.', 'success');
+      } catch {
+        setFeedback('No se pudo copiar el Markdown.', 'error');
+      }
+    });
+
+    const showRecovery = () => {
+      const storedValue = localStorage.getItem(STORAGE_KEY);
+      if (!storedValue) return;
+      try {
+        const stored = JSON.parse(storedValue);
+        const savedAt = new Date(stored.savedAt);
+        byId('recovery-description').textContent =
+          `${stored.article?.title || 'Nota sin título'} · ${savedAt.toLocaleString('es-AR')}`;
+        recoveryBanner.hidden = false;
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    };
+
+    const reconcilePendingSave = () => {
+      const storedValue = localStorage.getItem(PENDING_SAVE_KEY);
+      if (!storedValue) return false;
+
+      try {
+        const pending = JSON.parse(storedValue);
+        const age = Date.now() - new Date(pending.startedAt).valueOf();
+        if (!pending.article || !Number.isFinite(age) || age > 5 * 60 * 1000) {
+          localStorage.removeItem(PENDING_SAVE_KEY);
+          return false;
+        }
+
+        const indexedArticle = articleIndex.find(
+          (entry) => entry.slug === pending.article.slug,
+        );
+        if (!indexedArticle) return false;
+
+        localStorage.removeItem(PENDING_SAVE_KEY);
+        localStorage.removeItem(STORAGE_KEY);
+        const savedDraft = draftData.find(
+          (entry) => entry.fileName === indexedArticle.fileName,
+        );
+
+        if (indexedArticle.status === 'draft' && savedDraft) {
+          loadDraft(savedDraft, true);
+          openArticle.href =
+            indexedArticle.externalUrl ?? `/notas/${indexedArticle.slug}/`;
+          openArticle.hidden = false;
+          setFeedback(
+            `Borrador guardado en src/content/articles/${indexedArticle.fileName}.`,
+            'success',
+          );
+          return true;
+        }
+
+        state.mode = 'update';
+        state.sourceFile = indexedArticle.fileName;
+        state.expectedMtimeMs = null;
+        state.slugTouched = true;
+        state.saveLocked = true;
+        slugInput.readOnly = true;
+        fillArticle(pending.article);
+        byId('writing-mode').textContent =
+          `${indexedArticle.fileName} guardado como ${indexedArticle.status}`;
+        openArticle.href =
+          indexedArticle.externalUrl ?? `/notas/${indexedArticle.slug}/`;
+        openArticle.hidden = false;
+        setBaseline();
+        setFeedback(
+          `Artículo guardado como ${indexedArticle.status}. Para editarlo de nuevo, cambialo a draft.`,
+          'success',
+        );
+        return true;
+      } catch {
+        localStorage.removeItem(PENDING_SAVE_KEY);
+        return false;
+      }
+    };
+
+    byId('recover-local').addEventListener('click', () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const draft = draftData.find(
+          (item) => item.fileName === stored.sourceFile,
+        );
+        if (stored.mode === 'update' && draft) {
+          loadDraft(draft, true);
+          state.expectedMtimeMs = stored.expectedMtimeMs;
+        } else {
+          startNewArticle(true, true);
+        }
+        fillArticle(stored.article);
+        state.slugTouched = Boolean(stored.article.slug);
+        state.baseline = '__recovered__';
+        recoveryBanner.hidden = true;
+        updateSaveState();
+        setFeedback('Cambios locales recuperados. Todavía no están guardados.', 'pending');
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+        recoveryBanner.hidden = true;
+      }
+    });
+
+    byId('discard-local').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      recoveryBanner.hidden = true;
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (!isDirty()) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    startNewArticle(true, true);
+    if (!reconcilePendingSave()) showRecovery();
+  </script>
+
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .editor-shell {
+      width: min(100%, 1480px);
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 3vw, 3rem);
+    }
+
+    .editor-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .editor-header-inner {
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .editor-brand,
+    .site-link {
+      text-decoration: none;
+    }
+
+    .editor-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      width: max-content;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+    }
+
+    .editor-brand-mark {
+      width: 15px;
+      height: 15px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+    }
+
+    .development-label {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .development-label span {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px var(--accent-tint);
+    }
+
+    .site-link {
+      justify-self: end;
+      color: var(--accent-ink);
+      font-size: .86rem;
+    }
+
+    .site-link:hover {
+      color: var(--accent);
+    }
+
+    .editor-main {
+      min-height: calc(100vh - 64px);
+      padding-block: clamp(2.5rem, 6vw, 5rem) 7rem;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 44px,
+        var(--bg);
+    }
+
+    .editor-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(260px, .75fr);
+      align-items: end;
+      gap: 2rem;
+      padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+    }
+
+    .editor-kicker {
+      margin: 0 0 1rem;
+      color: var(--accent-ink);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+
+    .editor-intro h1 {
+      max-width: 13ch;
+      margin: 0;
+      font-size: clamp(2.7rem, 6vw, 5.6rem);
+      text-wrap: balance;
+    }
+
+    .editor-intro > p {
+      margin: 0 0 .5rem;
+      color: var(--ink-soft);
+      font-size: clamp(1rem, 1.4vw, 1.16rem);
+    }
+
+    .draft-strip,
+    .recovery-banner {
+      background: var(--bg);
+      border: 1px solid var(--line-strong);
+    }
+
+    .draft-strip {
+      display: grid;
+      grid-template-columns: 1fr minmax(360px, .9fr);
+      align-items: center;
+      gap: 2rem;
+      padding: 1.15rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-label {
+      margin: 0;
+      color: var(--ink);
+      font-size: .82rem;
+      font-weight: 600;
+    }
+
+    .field-hint {
+      margin: .35rem 0 0;
+      color: var(--muted);
+      font-size: .75rem;
+    }
+
+    .draft-actions {
+      display: flex;
+      gap: .6rem;
+    }
+
+    .draft-actions select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .recovery-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding: .9rem 1.25rem;
+      margin-bottom: 1rem;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-tint);
+    }
+
+    .recovery-banner[hidden] {
+      display: none;
+    }
+
+    .recovery-banner strong,
+    .recovery-banner span {
+      display: block;
+    }
+
+    .recovery-banner span {
+      margin-top: .2rem;
+      color: var(--accent-ink);
+      font-size: .8rem;
+    }
+
+    .recovery-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .text-button {
+      padding: .25rem 0;
+      border: 0;
+      border-bottom: 1px solid currentColor;
+      background: transparent;
+      color: var(--accent-ink);
+      cursor: pointer;
+      font-size: .82rem;
+    }
+
+    #article-form {
+      background: var(--bg);
+      border: 1px solid var(--line-strong);
+    }
+
+    .metadata-section,
+    .writing-section {
+      padding: clamp(1.25rem, 3.5vw, 3rem);
+    }
+
+    .writing-section {
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .section-caption {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: .8rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-caption > span {
+      padding-top: .25rem;
+      color: var(--accent);
+      font-size: .72rem;
+      font-weight: 600;
+    }
+
+    .section-caption h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 2.5vw, 2.2rem);
+    }
+
+    .section-caption p {
+      margin: .45rem 0 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: 1.3fr .75fr .75fr;
+      gap: 1.15rem;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field-title,
+    .field-excerpt {
+      grid-column: span 2;
+    }
+
+    .field-tags {
+      grid-column: 1 / -1;
+    }
+
+    .field-cover {
+      grid-column: span 2;
+    }
+
+    .field label,
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: .45rem;
+      color: var(--ink);
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    .field label span,
+    .label-row span {
+      color: var(--muted);
+      font-size: .7rem;
+      font-weight: 400;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: var(--bg);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    input,
+    select {
+      min-height: 44px;
+      padding: .68rem .75rem;
+    }
+
+    textarea {
+      padding: .75rem;
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: color-mix(in srgb, var(--muted) 72%, transparent);
+    }
+
+    input:read-only {
+      background: var(--bg-alt);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    input:user-invalid,
+    textarea:user-invalid,
+    select:user-invalid {
+      border-color: #b54b4b;
+    }
+
+    .input-prefix {
+      display: flex;
+      min-height: 44px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: var(--bg);
+    }
+
+    .input-prefix:focus-within {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .input-prefix > span {
+      display: grid;
+      place-items: center;
+      padding-left: .75rem;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .input-prefix input {
+      min-width: 0;
+      border: 0;
+      outline: 0;
+    }
+
+    .tag-editor {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .45rem;
+      min-height: 48px;
+      padding: .4rem .5rem;
+      border: 1px solid var(--line-strong);
+      background: var(--bg);
+    }
+
+    .tag-editor:focus-within {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .tag-list {
+      display: contents;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .25rem .35rem .25rem .55rem;
+      background: var(--accent-tint);
+      border: 1px solid var(--line-strong);
+      color: var(--accent-ink);
+      font-size: .72rem;
+    }
+
+    .tag-chip button {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: currentColor;
+      cursor: pointer;
+    }
+
+    .tag-editor input {
+      flex: 1;
+      width: auto;
+      min-width: 180px;
+      min-height: 34px;
+      padding: .35rem;
+      border: 0;
+      outline: 0;
+    }
+
+    .cover-preview {
+      position: relative;
+      margin: .7rem 0 0;
+      border: 1px solid var(--line);
+      background: var(--bg-alt);
+    }
+
+    .cover-preview[hidden] {
+      display: none;
+    }
+
+    .cover-preview img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+    }
+
+    .cover-preview figcaption {
+      padding: .4rem .6rem;
+      color: var(--muted);
+      font-size: .7rem;
+    }
+
+    .writing-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      min-height: 680px;
+      border: 1px solid var(--line-strong);
+    }
+
+    .writing-pane,
+    .output-pane {
+      min-width: 0;
+      background: var(--bg);
+    }
+
+    .writing-pane {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      border-right: 1px solid var(--line-strong);
+    }
+
+    .pane-heading,
+    .output-tabs {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .7rem .9rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-alt);
+    }
+
+    .pane-heading > div {
+      display: flex;
+      align-items: baseline;
+      gap: .7rem;
+    }
+
+    .pane-heading strong {
+      font-size: .8rem;
+    }
+
+    .pane-heading span,
+    #body-count {
+      color: var(--muted);
+      font-size: .68rem;
+    }
+
+    .markdown-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1px;
+      padding: .5rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--line);
+    }
+
+    .markdown-toolbar button {
+      min-width: 38px;
+      height: 34px;
+      padding: 0 .6rem;
+      border: 0;
+      background: var(--bg);
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-size: .75rem;
+    }
+
+    .markdown-toolbar button:hover {
+      background: var(--accent-tint);
+      color: var(--accent-ink);
+    }
+
+    #body {
+      min-height: 580px;
+      padding: 1.25rem;
+      border: 0;
+      border-radius: 0;
+      outline: 0;
+      resize: none;
+      background: var(--bg);
+      font: .92rem/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+      tab-size: 2;
+    }
+
+    #body:focus {
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .output-pane {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .output-tabs {
+      justify-content: flex-start;
+      gap: 0;
+      padding: 0 .8rem;
+    }
+
+    .output-tabs > button {
+      align-self: stretch;
+      padding: 0 .8rem;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .74rem;
+    }
+
+    .output-tabs > button[aria-selected='true'] {
+      border-bottom-color: var(--accent);
+      color: var(--ink);
+    }
+
+    .output-tabs .copy-button {
+      margin-left: auto;
+      color: var(--accent-ink);
+    }
+
+    #preview-panel,
+    #file-panel {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #preview-panel[hidden],
+    #file-panel[hidden] {
+      display: none;
+    }
+
+    #preview-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 626px;
+      display: block;
+      border: 0;
+      background: var(--bg);
+    }
+
+    .preview-state {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background: color-mix(in srgb, var(--bg) 94%, transparent);
+      color: var(--muted);
+      text-align: center;
+      font-size: .8rem;
+    }
+
+    .preview-state[hidden] {
+      display: none;
+    }
+
+    #generated-markdown {
+      height: 100%;
+      min-height: 626px;
+      margin: 0;
+      padding: 1.25rem;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: var(--bg-alt);
+      color: var(--ink-soft);
+      font: .82rem/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      min-height: 76px;
+      padding: .9rem clamp(1.25rem, 3.5vw, 3rem);
+      border-top: 1px solid var(--line-strong);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(14px);
+    }
+
+    .save-feedback {
+      max-width: 65ch;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .save-feedback[data-tone='pending'] {
+      color: var(--accent-ink);
+    }
+
+    .save-feedback[data-tone='success'] {
+      color: #23754a;
+    }
+
+    .save-feedback[data-tone='error'] {
+      color: #b54b4b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .save-feedback[data-tone='success'] {
+        color: #72c89a;
+      }
+
+      .save-feedback[data-tone='error'] {
+        color: #e88888;
+      }
+    }
+
+    .save-actions {
+      display: flex;
+      gap: .6rem;
+      flex: 0 0 auto;
+    }
+
+    .desk-button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      padding: .65rem 1rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      text-decoration: none;
+      cursor: pointer;
+      font: 500 .82rem var(--font-sans);
+    }
+
+    .desk-button[hidden] {
+      display: none;
+    }
+
+    .desk-button-quiet {
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .desk-button-quiet:hover {
+      border-color: var(--ink);
+    }
+
+    .desk-button-primary {
+      min-width: 138px;
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--on-ink);
+    }
+
+    .desk-button-primary:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .desk-button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    @media (max-width: 1080px) {
+      .metadata-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .field-title,
+      .field-excerpt,
+      .field-tags,
+      .field-cover {
+        grid-column: 1 / -1;
+      }
+
+      .writing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .writing-pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--line-strong);
+      }
+
+      #body {
+        min-height: 440px;
+      }
+
+      #preview-frame,
+      #generated-markdown {
+        min-height: 620px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .editor-header-inner {
+        grid-template-columns: 1fr auto;
+      }
+
+      .development-label {
+        display: none;
+      }
+
+      .editor-intro,
+      .draft-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-intro {
+        gap: 1.25rem;
+      }
+
+      .editor-intro h1 {
+        font-size: clamp(2.5rem, 13vw, 4.2rem);
+      }
+
+      .draft-strip {
+        gap: 1rem;
+      }
+
+      .draft-actions,
+      .recovery-banner,
+      .save-bar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .draft-actions {
+        display: grid;
+      }
+
+      .metadata-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metadata-grid .field {
+        grid-column: 1;
+      }
+
+      .pane-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .2rem;
+      }
+
+      .save-bar {
+        position: static;
+      }
+
+      .save-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .save-actions > :only-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .site-link {
+        font-size: 0;
+      }
+
+      .site-link span {
+        font-size: 1rem;
+      }
+
+      .metadata-section,
+      .writing-section {
+        padding-inline: .85rem;
+      }
+
+      .section-caption {
+        grid-template-columns: 25px 1fr;
+      }
+
+      .save-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .markdown-toolbar button {
+        flex: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+      }
+    }
+  </style>
+</Layout>

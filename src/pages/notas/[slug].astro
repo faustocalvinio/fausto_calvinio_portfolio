@@ -13,7 +13,8 @@ export async function getStaticPaths() {
   return (await getCollection('articles'))
     .filter(
       (entry) =>
-        entry.data.status !== 'draft' && !entry.data.externalUrl,
+        (entry.data.status !== 'draft' || import.meta.env.DEV) &&
+        !entry.data.externalUrl,
     )
     .map((entry) => ({
       params: { slug: entry.data.slug },
@@ -53,6 +54,8 @@ const structuredData = [
   mainEntityId={`${toAbsoluteUrl(path)}#article`}
   publishedTime={entry.data.publishedAt}
   tags={entry.data.tags}
+  noindex={entry.data.status === 'draft'}
+  nofollow={entry.data.status === 'draft'}
   structuredData={structuredData}
 >
   <Header />

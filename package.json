@@ -3,5 +3,6 @@
   "type": "module",
   "private": true,
   "scripts": { "dev": "astro dev", "build": "astro build", "preview": "astro preview", "og:capture": "node scripts/capture-og.mjs" },
-  "dependencies": { "@astrojs/sitemap": "^3.2.1", "astro": "^5.7.0" }
+  "dependencies": { "@astrojs/sitemap": "^3.2.1", "astro": "^5.7.0" },
+  "devDependencies": { "@astrojs/markdown-remark": "^6.3.11" }
 }
