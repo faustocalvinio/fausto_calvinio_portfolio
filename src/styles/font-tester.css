@@ -69,8 +69,7 @@ html {
   bottom: clamp(1rem, 3vw, 2.25rem);
   display: inline-flex;
   align-items: center;
-  gap: .45rem;
-  padding: .65rem .8rem;
+  padding: .7rem;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);

@@ -1,8 +1,8 @@
 import { getCollection } from 'astro:content';
-import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
 export async function GET({ site }: { site?: URL }) {
-  const siteUrl = site ?? new URL(siteConfig.url);
+  const siteUrl = site ?? new URL(seoConfig.site.url);
   const toUrl = (path: string) => new URL(path, siteUrl).href;
   const [services, projects, notes] = await Promise.all([
     getCollection('services'),
@@ -14,13 +14,13 @@ export async function GET({ site }: { site?: URL }) {
     .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt));
 
   const lines = [
-    `# ${siteConfig.name}`,
+    `# ${seoConfig.site.name}`,
     '',
-    `> ${siteConfig.description}`,
+    `> ${seoConfig.site.description}`,
     '',
     '## Perfil y contacto',
     `- [Inicio](${toUrl('/')}): Presentación, enfoque de trabajo y datos de contacto.`,
-    `- [Contacto](${toUrl('/#contacto')}): Escribir a ${siteConfig.author.email} para proyectos de software, IA y automatización.`,
+    `- [Contacto](${toUrl('/#contacto')}): Escribir a ${seoConfig.author.email} para proyectos de software, IA y automatización.`,
     '',
     '## Servicios',
     ...services.map((service) => `- [${service.data.title}](${toUrl('/#servicios')}): ${service.data.description}`),

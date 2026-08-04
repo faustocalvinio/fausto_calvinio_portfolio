@@ -1,17 +1,17 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { siteConfig } from './src/config/site.ts';
+import { seoConfig } from './src/config/seo.ts';
 import articleEditorIntegration from './src/integrations/article-editor.mjs';
 
 export default defineConfig({
-  site: siteConfig.url,
+  site: seoConfig.site.url,
   integrations: [
     articleEditorIntegration(),
     sitemap({
       filter: (page) => {
-        const { pathname } = new URL(page, siteConfig.url);
+        const { pathname } = new URL(page, seoConfig.site.url);
         const normalizedPath = pathname.replace(/\/+$/, '') || '/';
-        return !siteConfig.seo.sitemapExcludedPaths.includes(normalizedPath);
+        return !seoConfig.sitemapExcludedPaths.includes(normalizedPath);
       },
     }),
   ],

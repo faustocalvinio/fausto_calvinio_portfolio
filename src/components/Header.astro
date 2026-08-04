@@ -1,14 +1,15 @@
 ---
 import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
-const emailHref = `mailto:${siteConfig.author.email}`;
+const emailHref = `mailto:${seoConfig.author.email}`;
 ---
 
 <header class="site-header">
   <div class="container header-inner">
     <a class="brand" href="/">
-      <span class="brand-mark"></span>
-      <span class="brand-name">{siteConfig.name}</span>
+      <img class="brand-logo" src="/favicon.png" alt="" width="24" height="24" />
+      <span class="brand-name">{seoConfig.site.name}</span>
     </a>
     <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="site-nav" aria-label="Navegación principal">

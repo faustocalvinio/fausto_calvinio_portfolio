@@ -28,7 +28,6 @@ export const selectedWorksConfig: SelectedWorksConfig = {
     mode: 'manual',
     slugs: [
       'plataforma-multi-rubro-agentes',
-      'curatehub',
       'automatizaciones-n8n',
       'qr-ticketing',
     ],

@@ -7,6 +7,7 @@ problem: Recursos útiles dispersos y difíciles de volver a encontrar.
 solution: Una interfaz rápida y navegable para clasificar y consultar referencias.
 status: Publicado.
 featured: true
+hidden: true
 year: '2024'
 stack: [Astro, Tailwind]
 links: {live: 'https://curatehub.vercel.app/', github: 'https://github.com/faustocalvinio/personal-resources'}

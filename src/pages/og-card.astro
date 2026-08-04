@@ -2,26 +2,26 @@
 import '../styles/global.css';
 import '../styles/font-tester.css';
 import HeroSystemVisual from '../components/HeroSystemVisual.astro';
-import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
-const hostname = new URL(siteConfig.url).hostname;
+const hostname = new URL(seoConfig.site.url).hostname;
 ---
 
 <!doctype html>
-<html lang={siteConfig.language}>
+<html lang={seoConfig.site.language}>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta charset={seoConfig.head.charset} />
+    <meta name="viewport" content={seoConfig.head.viewport} />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:opsz,wght@5..1200,400;5..1200,500;5..1200,600&display=swap" rel="stylesheet" />
-    <title>Vista previa social — {siteConfig.name}</title>
+    <title>Vista previa social — {seoConfig.site.name}</title>
   </head>
   <body>
     <main class="social-card">
       <div class="card-copy">
-        <p class="card-eyebrow">{siteConfig.name} · Ingeniería de software</p>
+        <p class="card-eyebrow">{seoConfig.site.name} · Ingeniería de software</p>
         <h1>Sistemas de IA que <span>trabajan con tu equipo.</span></h1>
         <p class="card-summary">Agentes, automatización, software e integraciones para convertir procesos complejos en operaciones claras.</p>
         <div class="card-signature">

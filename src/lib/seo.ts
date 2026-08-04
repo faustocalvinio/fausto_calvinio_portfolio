@@ -1,4 +1,4 @@
-import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
 export type OpenGraphType = 'website' | 'article' | 'profile';
 export type PageSchemaType =
@@ -38,7 +38,7 @@ export interface SeoProps {
   structuredData?: StructuredData | readonly StructuredData[];
 }
 
-export const toAbsoluteUrl = (value: string | URL, base = siteConfig.url) =>
+export const toAbsoluteUrl = (value: string | URL, base = seoConfig.site.url) =>
   new URL(value, base).href;
 
 export const seoIds = {
@@ -82,7 +82,7 @@ export const createArticleSchema = ({
     headline: title,
     description,
     datePublished: publishedAt,
-    inLanguage: siteConfig.languageTag,
+    inLanguage: seoConfig.site.languageTag,
     author: { '@id': seoIds.person },
     publisher: { '@id': seoIds.person },
     mainEntityOfPage: { '@id': `${url}#webpage` },
@@ -115,7 +115,7 @@ export const createProjectSchema = ({
     name: title,
     description,
     genre: category,
-    inLanguage: siteConfig.languageTag,
+    inLanguage: seoConfig.site.languageTag,
     creator: { '@id': seoIds.person },
     keywords: stack.join(', '),
     mainEntityOfPage: { '@id': `${url}#webpage` },

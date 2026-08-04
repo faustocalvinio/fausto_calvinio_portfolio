@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
 export const GET: APIRoute = ({ site }) => {
-  const siteUrl = site ?? new URL(siteConfig.url);
+  const siteUrl = site ?? new URL(seoConfig.site.url);
   const body = [
     'User-agent: *',
     'Allow: /',

@@ -1,21 +1,22 @@
 ---
 import { siteConfig } from '../config/site';
+import { seoConfig } from '../config/seo';
 
 const currentYear = new Date().getFullYear();
 const copyrightYears =
   currentYear > siteConfig.footer.startYear
     ? `${siteConfig.footer.startYear}–${currentYear}`
     : String(siteConfig.footer.startYear);
-const emailHref = `mailto:${siteConfig.author.email}`;
+const emailHref = `mailto:${seoConfig.author.email}`;
 ---
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-main">
       <div class="footer-identity">
-        <a class="brand footer-brand" href="/" aria-label={`${siteConfig.name}, inicio`}>
+        <a class="brand footer-brand" href="/" aria-label={`${seoConfig.site.name}, inicio`}>
           <span class="brand-mark"></span>
-          <span class="brand-name">{siteConfig.name}</span>
+          <span class="brand-name">{seoConfig.site.name}</span>
         </a>
         <p class="footer-specialty">{siteConfig.footer.specialty}</p>
         <p class="footer-tag">{siteConfig.footer.tagline}</p>
@@ -35,12 +36,12 @@ const emailHref = `mailto:${siteConfig.author.email}`;
       <address class="footer-column footer-contact">
         <p class="footer-label">Contacto</p>
         <a class="footer-email" href={emailHref}>
-          <span>{siteConfig.author.email}</span>
+          <span>{seoConfig.author.email}</span>
           <i aria-hidden="true">↗</i>
         </a>
         <div class="footer-socials" role="group" aria-label="Redes sociales">
           {
-            Object.values(siteConfig.social).map((item) => (
+            Object.values(seoConfig.social).map((item) => (
               <a href={item.url} target="_blank" rel="me noreferrer">
                 {item.label}<span aria-hidden="true">↗</span>
               </a>

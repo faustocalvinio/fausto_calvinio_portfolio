@@ -1,0 +1,116 @@
+---
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Página no encontrada"
+  description="La ruta que buscás no existe o ya no está disponible."
+  noindex
+  pageSchemaType="WebPage"
+>
+  <Header />
+
+  <main class="not-found-main">
+    <section class="not-found section" aria-labelledby="not-found-title">
+      <div class="container not-found-content">
+        <p class="eyebrow">Error 404</p>
+        <p class="not-found-code" aria-hidden="true">404</p>
+        <h1 id="not-found-title">Esta ruta no existe.</h1>
+        <p class="not-found-copy">
+          Puede que el enlace haya cambiado o que la dirección esté incompleta. Volvamos a un lugar
+          conocido.
+        </p>
+        <div class="not-found-actions">
+          <a class="btn btn-primary" href="/">Volver al inicio <span aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost" href="/#proyectos">Ver proyectos</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .not-found-main {
+    display: flex;
+    min-height: min(62vh, 46rem);
+  }
+
+  .not-found {
+    display: grid;
+    width: 100%;
+    min-height: min(62vh, 46rem);
+    place-items: center;
+    padding-block: clamp(5rem, 12vw, 9rem);
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--accent-tint) 58%, transparent), transparent 52%),
+      var(--bg);
+  }
+
+  .not-found-content {
+    width: 100%;
+    max-width: 48rem;
+    text-align: center;
+  }
+
+  .not-found .eyebrow {
+    justify-content: center;
+    margin-bottom: 1.4rem;
+  }
+
+  .not-found-code {
+    margin: 0;
+    color: var(--accent);
+    font: 400 clamp(6rem, 18vw, 12rem) / 0.8 var(--font-display);
+    letter-spacing: -0.08em;
+  }
+
+  .not-found h1 {
+    margin: clamp(1.7rem, 4vw, 2.5rem) 0 1rem;
+    font-size: clamp(2.1rem, 1.4rem + 2.6vw, 3.6rem);
+  }
+
+  .not-found-copy {
+    max-width: 38ch;
+    margin: 0 auto;
+    color: var(--ink-soft);
+    font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
+  }
+
+  .not-found-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 2.3rem;
+  }
+
+  @media (max-width: 560px) {
+    .not-found-main,
+    .not-found {
+      min-height: 0;
+    }
+
+    .not-found {
+      padding-block: 5rem 6rem;
+    }
+
+    .not-found-actions {
+      display: grid;
+    }
+
+    .not-found-actions .btn {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .not-found-actions .btn {
+      transition: none;
+    }
+  }
+</style>
