@@ -1,5 +1,5 @@
 ---
-title: "❓ Storybook"
+title: "Storybook"
 slug: storybook
 excerpt: "What is Storybook?"
 publishedAt: '2024-05-20'

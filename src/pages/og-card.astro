@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import '../styles/font-tester.css';
 import HeroSystemVisual from '../components/HeroSystemVisual.astro';
+import { homeConfig } from '../config/home';
 import { seoConfig } from '../config/seo';
 
 const hostname = new URL(seoConfig.site.url).hostname;
@@ -29,7 +30,7 @@ const hostname = new URL(seoConfig.site.url).hostname;
           <span>{hostname}</span>
         </div>
       </div>
-      <div class="card-map"><HeroSystemVisual /></div>
+      <div class="card-map"><HeroSystemVisual {...homeConfig.heroSystemVisual} /></div>
     </main>
   </body>
 </html>

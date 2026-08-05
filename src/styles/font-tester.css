@@ -266,7 +266,7 @@ html {
 }
 
 .about-timeline {
-  border-top: 1px solid var(--line);
+  padding-top: .35rem;
 }
 
 .about-item {
@@ -294,23 +294,6 @@ html {
 .about-item p:not(.article-date) {
   margin: 0 0 .8rem;
   color: var(--ink-soft);
-}
-
-.about-note {
-  display: flex;
-  align-items: center;
-  gap: .55rem;
-  margin: 1.4rem 0 0;
-  color: var(--muted);
-  font-size: .88rem;
-}
-
-.about-note span {
-  width: 8px;
-  height: 8px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--accent);
 }
 
 .contact-section {

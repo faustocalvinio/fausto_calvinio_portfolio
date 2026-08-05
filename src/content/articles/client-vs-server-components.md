@@ -1,5 +1,5 @@
 ---
-title: "❓ Client vs Server Components"
+title: "Client vs Server Components"
 slug: client-vs-server-components
 excerpt: "What are they and when to use them."
 publishedAt: '2024-05-21'

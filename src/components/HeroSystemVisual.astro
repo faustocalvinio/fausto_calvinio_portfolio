@@ -1,66 +1,248 @@
-<div class="knowledge-map" aria-hidden="true">
-  <div class="map-meta">
-    <span>Ecosistema técnico</span>
-    <span class="map-state"><i></i> Conexiones activas</span>
+---
+export interface HeroSystemCluster {
+  label: string;
+  tools: readonly string[];
+}
+
+export interface HeroSystemVisualProps {
+  eyebrow?: string;
+  statusLabel?: string;
+  ariaLabel?: string;
+  core?: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+  };
+  clusters?: {
+    ai: HeroSystemCluster;
+    automation: HeroSystemCluster;
+    software: HeroSystemCluster;
+    data: HeroSystemCluster;
+    web: HeroSystemCluster;
+  };
+  stages?: readonly string[];
+}
+
+const defaults = {
+  eyebrow: 'Ecosistema técnico',
+  statusLabel: 'Conexiones activas',
+  ariaLabel: 'Mapa del ecosistema técnico conectado por una arquitectura central de sistemas',
+  core: {
+    eyebrow: 'Arquitectura',
+    title: 'Sistemas',
+    subtitle: 'IA + software',
+  },
+  clusters: {
+    ai: { label: 'IA aplicada', tools: ['CrewAI', 'LLMs', 'RAG', 'MCP', 'Firecrawl', 'OpenCode'] },
+    automation: { label: 'Automatización', tools: ['n8n', 'Webhooks', 'REST APIs', 'ETL', 'Google Workspace', 'Notion'] },
+    software: { label: 'Software', tools: ['Python', 'TypeScript', 'React', 'Node.js', 'Astro', 'Express', 'JWT'] },
+    data: { label: 'Datos', tools: ['PostgreSQL', 'MongoDB', 'Streamlit', 'httpx', 'BeautifulSoup'] },
+    web: { label: 'Productos web', tools: ['WordPress', 'WooCommerce', 'Elementor', 'PayPal', 'Tailwind', 'Markdown', 'YoastSEO', 'LiteSpeed'] },
+  },
+  stages: ['Investigar', 'Conectar', 'Construir', 'Operar'],
+} as const;
+
+const {
+  eyebrow = defaults.eyebrow,
+  statusLabel = defaults.statusLabel,
+  ariaLabel = defaults.ariaLabel,
+  core = defaults.core,
+  clusters = defaults.clusters,
+  stages = defaults.stages,
+} = Astro.props;
+
+const clusterEntries = Object.entries(clusters) as [keyof typeof clusters, HeroSystemCluster][];
+---
+
+<hero-system-visual class="knowledge-map" role="img" aria-label={ariaLabel}>
+  <div class="map-meta" aria-hidden="true">
+    <span>{eyebrow}</span>
+    <span class="map-state"><i></i>{statusLabel}</span>
   </div>
 
-  <div class="map-canvas">
+  <div class="map-canvas" data-map-canvas aria-hidden="true">
+    <canvas class="connection-canvas" data-connection-canvas></canvas>
     <div class="orbit orbit-one"></div>
     <div class="orbit orbit-two"></div>
 
-    <div class="network-line line-ai"><span></span></div>
-    <div class="network-line line-automation"><span></span></div>
-    <div class="network-line line-software"><span></span></div>
-    <div class="network-line line-data"><span></span></div>
-    <div class="network-line line-web"><span></span></div>
+    {clusterEntries.map(([id, cluster]) => (
+      <section class:list={['knowledge-cluster', `cluster-${id}`]} data-cluster={id}>
+        <p><i></i>{cluster.label}</p>
+        <div class="cluster-tools">
+          {cluster.tools.map((tool) => <span>{tool}</span>)}
+        </div>
+      </section>
+    ))}
 
-    <section class="knowledge-cluster cluster-ai">
-      <p><i></i> IA aplicada</p>
-      <div class="cluster-tools">
-        <span>CrewAI</span><span>LLMs</span><span>RAG</span><span>MCP</span><span>Firecrawl</span><span>OpenCode</span>
-      </div>
-    </section>
-
-    <section class="knowledge-cluster cluster-automation">
-      <p><i></i> Automatización</p>
-      <div class="cluster-tools">
-        <span>n8n</span><span>Webhooks</span><span>REST APIs</span><span>ETL</span><span>Google Workspace</span><span>Notion</span>
-      </div>
-    </section>
-
-    <div class="map-core">
-      <span>Arquitectura</span>
-      <strong>Sistemas</strong>
-      <small>IA + software</small>
+    <div class="map-core" data-map-core>
+      <span>{core.eyebrow}</span>
+      <strong>{core.title}</strong>
+      <small>{core.subtitle}</small>
       <i></i>
     </div>
-
-    <section class="knowledge-cluster cluster-software">
-      <p><i></i> Software</p>
-      <div class="cluster-tools">
-        <span>Python</span><span>TypeScript</span><span>React</span><span>Node.js</span><span>Astro</span><span>Express</span><span>JWT</span>
-      </div>
-    </section>
-
-    <section class="knowledge-cluster cluster-data">
-      <p><i></i> Datos</p>
-      <div class="cluster-tools">
-        <span>PostgreSQL</span><span>MongoDB</span><span>Streamlit</span><span>httpx</span><span>BeautifulSoup</span>
-      </div>
-    </section>
-
-    <section class="knowledge-cluster cluster-web">
-      <p><i></i> Productos web</p>
-      <div class="cluster-tools">
-        <span>WordPress</span><span>WooCommerce</span><span>Elementor</span><span>PayPal</span><span>Tailwind</span><span>Markdown</span><span>YoastSEO</span><span>LiteSpeed</span>
-      </div>
-    </section>
   </div>
 
-  <div class="map-footer">
-    <span>Investigar</span><i></i><span>Conectar</span><i></i><span>Construir</span><i></i><span>Operar</span>
+  <div class="map-footer" aria-hidden="true">
+    {stages.map((stage, index) => (
+      <><span>{stage}</span>{index < stages.length - 1 && <i></i>}</>
+    ))}
   </div>
-</div>
+</hero-system-visual>
+
+<script>
+  class HeroSystemVisualElement extends HTMLElement {
+    private frame = 0;
+    private visible = true;
+    private resizeObserver?: ResizeObserver;
+    private intersectionObserver?: IntersectionObserver;
+    private darkMode?: MediaQueryList;
+    private reducedMotion?: MediaQueryList;
+    private redraw = () => {};
+
+    connectedCallback() {
+      const stage = this.querySelector<HTMLElement>('[data-map-canvas]');
+      const canvas = this.querySelector<HTMLCanvasElement>('[data-connection-canvas]');
+      const core = this.querySelector<HTMLElement>('[data-map-core]');
+      const clusters = Array.from(this.querySelectorAll<HTMLElement>('[data-cluster]'));
+      const context = canvas?.getContext('2d');
+      if (!stage || !canvas || !core || !context || clusters.length === 0) return;
+
+      type Point = { x: number; y: number };
+      type Connection = { start: Point; end: Point };
+      let connections: Connection[] = [];
+      let width = 0;
+      let height = 0;
+      let lineColor = '';
+      let accentColor = '';
+
+      const localRect = (element: HTMLElement) => {
+        const elementRect = element.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        return {
+          x: elementRect.left - stageRect.left,
+          y: elementRect.top - stageRect.top,
+          width: elementRect.width,
+          height: elementRect.height,
+        };
+      };
+
+      const center = (rect: ReturnType<typeof localRect>): Point => ({
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+      });
+
+      const edgePoint = (rect: ReturnType<typeof localRect>, target: Point): Point => {
+        const origin = center(rect);
+        const dx = target.x - origin.x;
+        const dy = target.y - origin.y;
+        const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : (rect.width / 2) / Math.abs(dx);
+        const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : (rect.height / 2) / Math.abs(dy);
+        const scale = Math.min(scaleX, scaleY);
+        return { x: origin.x + dx * scale, y: origin.y + dy * scale };
+      };
+
+      const updateGeometry = () => {
+        const stageRect = stage.getBoundingClientRect();
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        width = stageRect.width;
+        height = stageRect.height;
+        canvas.width = Math.round(width * pixelRatio);
+        canvas.height = Math.round(height * pixelRatio);
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+        const styles = getComputedStyle(this);
+        lineColor = styles.getPropertyValue('--connection-canvas').trim();
+        accentColor = styles.getPropertyValue('--signal-canvas').trim();
+
+        const coreRect = localRect(core);
+        const coreCenter = center(coreRect);
+        connections = clusters.map((cluster) => {
+          const clusterRect = localRect(cluster);
+          const clusterCenter = center(clusterRect);
+          return {
+            start: edgePoint(clusterRect, coreCenter),
+            end: edgePoint(coreRect, clusterCenter),
+          };
+        });
+      };
+
+      const drawDot = (point: Point, radius: number, color: string) => {
+        context.beginPath();
+        context.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        context.fillStyle = color;
+        context.fill();
+      };
+
+      const render = (time = 0) => {
+        context.clearRect(0, 0, width, height);
+        context.lineWidth = 1.25;
+        context.lineCap = 'round';
+
+        connections.forEach((connection, index) => {
+          context.beginPath();
+          context.moveTo(connection.start.x, connection.start.y);
+          context.lineTo(connection.end.x, connection.end.y);
+          context.strokeStyle = lineColor;
+          context.stroke();
+
+          drawDot(connection.start, 2.4, lineColor);
+          drawDot(connection.end, 2.4, lineColor);
+
+          if (!this.reducedMotion?.matches) {
+            const progress = ((time / 5200) + index / connections.length) % 1;
+            const signal = {
+              x: connection.start.x + (connection.end.x - connection.start.x) * progress,
+              y: connection.start.y + (connection.end.y - connection.start.y) * progress,
+            };
+            context.save();
+            context.shadowBlur = 12;
+            context.shadowColor = accentColor;
+            drawDot(signal, 3.1, accentColor);
+            context.restore();
+          }
+        });
+
+        if (this.visible && !this.reducedMotion?.matches) {
+          this.frame = requestAnimationFrame(render);
+        }
+      };
+
+      this.redraw = () => {
+        cancelAnimationFrame(this.frame);
+        updateGeometry();
+        render();
+      };
+
+      this.darkMode = window.matchMedia('(prefers-color-scheme: dark)');
+      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      this.darkMode.addEventListener('change', this.redraw);
+      this.reducedMotion.addEventListener('change', this.redraw);
+
+      this.resizeObserver = new ResizeObserver(this.redraw);
+      this.resizeObserver.observe(stage);
+      clusters.forEach((cluster) => this.resizeObserver?.observe(cluster));
+
+      this.intersectionObserver = new IntersectionObserver(([entry]) => {
+        this.visible = entry?.isIntersecting ?? false;
+        this.redraw();
+      }, { rootMargin: '120px' });
+      this.intersectionObserver.observe(this);
+      this.redraw();
+    }
+
+    disconnectedCallback() {
+      cancelAnimationFrame(this.frame);
+      this.resizeObserver?.disconnect();
+      this.intersectionObserver?.disconnect();
+      this.darkMode?.removeEventListener('change', this.redraw);
+      this.reducedMotion?.removeEventListener('change', this.redraw);
+    }
+  }
+
+  if (!customElements.get('hero-system-visual')) {
+    customElements.define('hero-system-visual', HeroSystemVisualElement);
+  }
+</script>
 
 <style>
   .knowledge-map {
@@ -69,9 +251,12 @@
     --map-line: color-mix(in srgb, var(--line-strong) 80%, transparent);
     --map-line-soft: color-mix(in srgb, var(--line) 68%, transparent);
     --map-glow: color-mix(in srgb, var(--accent) 16%, transparent);
+    --connection-canvas: #778ca5;
+    --signal-canvas: #1f518f;
     position: relative;
     isolation: isolate;
-    min-height: 482px;
+    display: block;
+    min-height: 510px;
     overflow: hidden;
     border: 1px solid var(--map-line);
     background:
@@ -144,7 +329,16 @@
   .map-canvas {
     position: relative;
     z-index: 2;
-    min-height: 386px;
+    min-height: 414px;
+  }
+
+  .connection-canvas {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
 
   .orbit {
@@ -175,25 +369,32 @@
   .knowledge-cluster {
     position: absolute;
     z-index: 4;
-    padding: .62rem .7rem;
+    padding: .72rem .8rem;
     border: 1px solid var(--map-line);
-    background: color-mix(in srgb, var(--map-panel) 91%, transparent);
+    background: color-mix(in srgb, var(--map-panel) 94%, transparent);
     box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 6%, transparent);
-    transition: border-color .3s ease, background .3s ease, transform .3s ease;
+    backdrop-filter: blur(8px);
+    transition: border-color .25s ease, background .25s ease, box-shadow .25s ease;
   }
 
   .knowledge-map:hover .knowledge-cluster {
     border-color: color-mix(in srgb, var(--accent) 37%, var(--map-line));
   }
 
+  .knowledge-cluster:hover {
+    border-color: color-mix(in srgb, var(--accent) 70%, var(--map-line));
+    background: color-mix(in srgb, var(--map-panel) 88%, var(--accent-tint));
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+
   .knowledge-cluster p {
     display: flex;
     align-items: center;
     gap: .4rem;
-    margin: 0 0 .42rem;
+    margin: 0 0 .44rem;
     color: var(--accent-ink);
     font-size: .52rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
   }
@@ -239,13 +440,13 @@
   }
 
   .cluster-automation {
-    top: 32%;
+    top: 34%;
     left: 3%;
     width: 34%;
   }
 
   .cluster-software {
-    top: 32%;
+    top: 34%;
     right: 3%;
     width: 34%;
   }
@@ -262,43 +463,23 @@
     width: 43%;
   }
 
-  .knowledge-map:hover .cluster-ai {
-    transform: translate(-50%, -2px);
-  }
-
-  .knowledge-map:hover .cluster-automation {
-    transform: translateX(-2px);
-  }
-
-  .knowledge-map:hover .cluster-software {
-    transform: translateX(2px);
-  }
-
-  .knowledge-map:hover .cluster-data {
-    transform: translate(-2px, 2px);
-  }
-
-  .knowledge-map:hover .cluster-web {
-    transform: translate(2px, 2px);
-  }
-
   .map-core {
     position: absolute;
     z-index: 5;
-    top: 51%;
+    top: 53%;
     left: 50%;
     display: grid;
-    width: 96px;
-    min-height: 88px;
+    width: 104px;
+    min-height: 92px;
     place-content: center;
     border: 1px solid color-mix(in srgb, var(--accent) 58%, var(--map-line));
-    background: color-mix(in srgb, var(--map-panel) 93%, var(--accent-tint));
+    background: color-mix(in srgb, var(--map-panel) 95%, var(--accent-tint));
     box-shadow:
       0 0 0 8px color-mix(in srgb, var(--bg) 45%, transparent),
       0 14px 34px color-mix(in srgb, var(--ink) 10%, transparent);
     text-align: center;
     transform: translate(-50%, -50%);
-    transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+    transition: border-color .3s ease, box-shadow .3s ease;
   }
 
   .knowledge-map:hover .map-core {
@@ -306,20 +487,19 @@
     box-shadow:
       0 0 0 8px color-mix(in srgb, var(--bg) 45%, transparent),
       0 0 34px color-mix(in srgb, var(--accent) 22%, transparent);
-    transform: translate(-50%, -53%);
   }
 
   .map-core span {
     color: var(--muted);
     font-size: .46rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
   }
 
   .map-core strong {
     margin-top: .18rem;
-    font: 500 1rem/1.1 var(--font-display);
+    font: 500 1.05rem/1.1 var(--font-display);
   }
 
   .map-core small {
@@ -338,120 +518,6 @@
     background: var(--accent);
   }
 
-  .network-line {
-    position: absolute;
-    z-index: 1;
-    overflow: visible;
-    background: var(--map-line);
-    transform-origin: 0 50%;
-  }
-
-  .network-line::before,
-  .network-line::after {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--map-line);
-    content: '';
-  }
-
-  .network-line::before {
-    top: -2px;
-    left: 0;
-  }
-
-  .network-line::after {
-    top: -2px;
-    right: 0;
-  }
-
-  .network-line span {
-    position: absolute;
-    top: -3px;
-    left: 0;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 13px color-mix(in srgb, var(--accent) 80%, transparent);
-    animation: map-signal 5.4s ease-in-out infinite;
-  }
-
-  .line-ai {
-    top: 28%;
-    left: 50%;
-    width: 1px;
-    height: 20%;
-  }
-
-  .line-ai::before,
-  .line-ai::after {
-    top: auto;
-    right: auto;
-    left: -2px;
-  }
-
-  .line-ai::before {
-    top: 0;
-  }
-
-  .line-ai::after {
-    bottom: 0;
-  }
-
-  .line-ai span {
-    top: 0;
-    left: -3px;
-    animation-name: map-signal-y;
-  }
-
-  .line-automation {
-    top: 49%;
-    left: 37%;
-    width: 13%;
-    height: 1px;
-  }
-
-  .line-automation span {
-    animation-delay: 1.15s;
-  }
-
-  .line-software {
-    top: 49%;
-    left: 50%;
-    width: 13%;
-    height: 1px;
-  }
-
-  .line-software span {
-    animation-delay: 2.25s;
-  }
-
-  .line-data {
-    top: 55%;
-    left: 50%;
-    width: 27%;
-    height: 1px;
-    transform: rotate(143deg);
-  }
-
-  .line-data span {
-    animation-delay: 3.35s;
-  }
-
-  .line-web {
-    top: 55%;
-    left: 50%;
-    width: 27%;
-    height: 1px;
-    transform: rotate(37deg);
-  }
-
-  .line-web span {
-    animation-delay: 4.45s;
-  }
-
   .map-footer {
     justify-content: center;
     gap: .5rem;
@@ -465,18 +531,6 @@
     width: clamp(7px, 2vw, 17px);
     height: 1px;
     background: var(--map-line);
-  }
-
-  @keyframes map-signal {
-    0%, 16% { left: 0; opacity: 0; }
-    28%, 70% { opacity: 1; }
-    84%, 100% { left: calc(100% - 7px); opacity: 0; }
-  }
-
-  @keyframes map-signal-y {
-    0%, 16% { top: 0; opacity: 0; }
-    28%, 70% { opacity: 1; }
-    84%, 100% { top: calc(100% - 7px); opacity: 0; }
   }
 
   @keyframes map-live {
@@ -496,6 +550,8 @@
       --map-line: color-mix(in srgb, var(--line-strong) 88%, transparent);
       --map-line-soft: color-mix(in srgb, var(--line) 76%, transparent);
       --map-glow: color-mix(in srgb, var(--accent) 13%, transparent);
+      --connection-canvas: #71849a;
+      --signal-canvas: #70ace1;
       box-shadow:
         0 28px 74px rgba(0, 0, 0, .3),
         inset 0 0 0 1px rgba(255, 255, 255, .018);
@@ -504,7 +560,7 @@
 
   @media (max-width: 560px) {
     .knowledge-map {
-      min-height: 460px;
+      min-height: 488px;
       background-size: auto, 32px 32px, 32px 32px, auto;
     }
 
@@ -515,47 +571,29 @@
     }
 
     .map-canvas {
-      min-height: 370px;
+      min-height: 399px;
     }
 
     .knowledge-cluster {
       padding: .52rem .55rem;
     }
 
-    .cluster-ai {
-      width: 68%;
-    }
-
+    .cluster-ai { width: 68%; }
     .cluster-automation,
-    .cluster-software {
-      width: 34%;
-    }
-
+    .cluster-software { width: 35%; }
     .cluster-data,
-    .cluster-web {
-      width: 44%;
-    }
+    .cluster-web { width: 44%; }
 
-    .knowledge-cluster p {
-      font-size: .44rem;
-    }
-
-    .cluster-tools {
-      gap: .1rem .39rem;
-    }
-
-    .cluster-tools span {
-      font-size: .48rem;
-    }
+    .knowledge-cluster p { font-size: .44rem; }
+    .cluster-tools { gap: .1rem .39rem; }
+    .cluster-tools span { font-size: .48rem; }
 
     .map-core {
-      width: 86px;
-      min-height: 78px;
+      width: 88px;
+      min-height: 80px;
     }
 
-    .map-core strong {
-      font-size: .9rem;
-    }
+    .map-core strong { font-size: .9rem; }
 
     .map-footer {
       min-height: 43px;
@@ -567,18 +605,8 @@
   @media (prefers-reduced-motion: reduce) {
     .knowledge-map,
     .knowledge-cluster,
-    .map-core {
-      transition: none;
-    }
-
+    .map-core { transition: none; }
     .map-state i,
-    .orbit,
-    .network-line span {
-      animation: none;
-    }
-
-    .network-line span {
-      opacity: .72;
-    }
+    .orbit { animation: none; }
   }
 </style>

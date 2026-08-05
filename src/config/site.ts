@@ -9,7 +9,7 @@ export const siteConfig = {
   contact: {
     projectEmailSubject: 'Quiero hablar sobre un proyecto',
     cvPath: '/CV_Fausto_Calvino.pdf',
-    availability: 'Disponible para trabajo remoto · Argentina · Internacional',
+    availability: 'Disponible para trabajo remoto',
   },
   content: {
     homeNotesLimit: 6,
@@ -20,8 +20,7 @@ export const siteConfig = {
     specialty: 'Software, IA aplicada y automatización.',
     availability: 'Disponible para nuevos proyectos',
     startYear: 2026,
-    location: 'Buenos Aires, Argentina',
-    workMode: 'Trabajo remoto internacional',
+    location: 'Buenos Aires, Argentina'
   },
 } as const;
 
