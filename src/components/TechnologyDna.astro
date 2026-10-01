@@ -1,0 +1,213 @@
+---
+interface Props {
+  label: string;
+  items: readonly string[];
+  rotationSeconds: number;
+}
+
+const { label, items, rotationSeconds } = Astro.props;
+---
+
+<section class="section technology-section" id="tecnologias" aria-labelledby="technology-title">
+  <div class="container technology-layout">
+    <technology-dna class="dna-visual" data-rotation-seconds={rotationSeconds} aria-hidden="true">
+      <canvas></canvas>
+    </technology-dna>
+    <div class="technology-copy">
+      <p class="eyebrow">{label}</p>
+      <h2 id="technology-title">El ADN de lo que construyo</h2>
+      <ul class="technology-list">
+        {items.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  class TechnologyDnaElement extends HTMLElement {
+    private cleanup?: () => void;
+
+    connectedCallback() {
+      this.cleanup?.();
+      const canvas = this.querySelector('canvas');
+      const context = canvas?.getContext('2d');
+      if (!canvas || !context) return;
+
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+      const darkMode = matchMedia('(prefers-color-scheme: dark)');
+      const period = Math.max(1, Number(this.dataset.rotationSeconds) || 24) * 1000;
+      let width = 0;
+      let height = 0;
+      let colors = ['', ''];
+      let frame = 0;
+      let visible = false;
+      let elapsed = 0;
+      let previousTime: number | undefined;
+
+      type Point = { x: number; y: number; depth: number };
+      type Segment = { a: Point; b: Point; strand: number; depth: number };
+
+      const draw = () => {
+        context.clearRect(0, 0, width, height);
+        const phase = reducedMotion.matches ? 0.7 : 0.7 + elapsed / period * Math.PI * 2;
+        const radius = Math.min(width * 0.24, height * 0.18, 82);
+        const padding = 18;
+        const point = (position: number, strand: number): Point => {
+          const angle = position * Math.PI * 4 + phase + strand * Math.PI;
+          return {
+            x: width / 2 + Math.cos(angle) * radius,
+            y: padding + position * (height - padding * 2),
+            depth: (Math.sin(angle) + 1) / 2,
+          };
+        };
+
+        // Draw the far segments first so the crossing strands have real depth.
+        const segments: Segment[] = [];
+        for (let strand = 0; strand < 2; strand++) {
+          for (let index = 0; index < 160; index++) {
+            const a = point(index / 160, strand);
+            const b = point((index + 1) / 160, strand);
+            segments.push({ a, b, strand, depth: (a.depth + b.depth) / 2 });
+          }
+        }
+
+        context.lineCap = 'round';
+        for (let index = 0; index <= 26; index++) {
+          const a = point(index / 26, 0);
+          const b = point(index / 26, 1);
+          const gradient = context.createLinearGradient(a.x, a.y, b.x + 0.01, b.y);
+          gradient.addColorStop(0, colors[0]);
+          gradient.addColorStop(1, colors[1]);
+          context.strokeStyle = gradient;
+          context.globalAlpha = 0.26;
+          context.lineWidth = 1;
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          context.lineTo(b.x, b.y);
+          context.stroke();
+        }
+
+        segments.sort((a, b) => a.depth - b.depth).forEach(({ a, b, strand, depth }) => {
+          context.globalAlpha = 0.28 + depth * 0.64;
+          context.strokeStyle = colors[strand];
+          context.lineWidth = 1.1 + depth * 0.8;
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          context.lineTo(b.x, b.y);
+          context.stroke();
+        });
+
+        for (let index = 0; index <= 26; index++) {
+          for (let strand = 0; strand < 2; strand++) {
+            const node = point(index / 26, strand);
+            context.globalAlpha = 0.3 + node.depth * 0.6;
+            context.fillStyle = colors[strand];
+            context.beginPath();
+            context.arc(node.x, node.y, 1.3 + node.depth * 0.7, 0, Math.PI * 2);
+            context.fill();
+          }
+        }
+        context.globalAlpha = 1;
+      };
+
+      const canAnimate = () => visible && !document.hidden && !reducedMotion.matches;
+      const animate = (time: number) => {
+        frame = 0;
+        if (!canAnimate()) return;
+        if (previousTime !== undefined) elapsed = (elapsed + time - previousTime) % period;
+        previousTime = time;
+        draw();
+        frame = requestAnimationFrame(animate);
+      };
+      const sync = () => {
+        cancelAnimationFrame(frame);
+        frame = 0;
+        previousTime = undefined;
+        draw();
+        if (canAnimate()) frame = requestAnimationFrame(animate);
+      };
+      const resize = () => {
+        const rect = this.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        const ratio = Math.min(devicePixelRatio || 1, 2);
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        const styles = getComputedStyle(this);
+        colors = ['--dna-blue', '--dna-violet'].map((token) => styles.getPropertyValue(token).trim());
+        sync();
+      };
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(this);
+      const intersectionObserver = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        sync();
+      });
+      intersectionObserver.observe(this);
+      reducedMotion.addEventListener('change', sync);
+      darkMode.addEventListener('change', resize);
+      document.addEventListener('visibilitychange', sync);
+      resize();
+
+      this.cleanup = () => {
+        cancelAnimationFrame(frame);
+        resizeObserver.disconnect();
+        intersectionObserver.disconnect();
+        reducedMotion.removeEventListener('change', sync);
+        darkMode.removeEventListener('change', resize);
+        document.removeEventListener('visibilitychange', sync);
+      };
+    }
+
+    disconnectedCallback() {
+      this.cleanup?.();
+    }
+  }
+
+  if (!customElements.get('technology-dna')) {
+    customElements.define('technology-dna', TechnologyDnaElement);
+  }
+</script>
+
+<style>
+  .technology-section { border-top: 1px solid var(--line); }
+  .technology-layout {
+    display: grid;
+    grid-template-columns: minmax(200px, .75fr) minmax(0, 1.25fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+  .dna-visual {
+    --dna-blue: #276fa8;
+    --dna-violet: #7662aa;
+    display: block;
+    position: relative;
+    height: 490px;
+    pointer-events: none;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .technology-copy { min-width: 0; }
+  h2 { max-width: 16ch; margin: 0 0 2.5rem; }
+  .technology-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem 1.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: .875rem;
+    line-height: 1.5;
+  }
+  @media (prefers-color-scheme: dark) {
+    .dna-visual { --dna-blue: #7bb7e8; --dna-violet: #ab98df; }
+  }
+  @media (max-width: 720px) {
+    .technology-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .dna-visual { height: 260px; width: min(100%, 320px); margin-inline: auto; }
+    h2 { max-width: none; margin-bottom: 2rem; }
+    .technology-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

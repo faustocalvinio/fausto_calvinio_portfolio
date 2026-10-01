@@ -1,6 +1,6 @@
-interface TechnologyMarqueeConfig {
+interface TechnologyDnaConfig {
   label: string;
-  durationSeconds: number;
+  rotationSeconds: number;
   items: readonly string[];
 }
 
@@ -30,7 +30,7 @@ interface HeroSystemVisualConfig {
 
 interface HomeConfig {
   heroSystemVisual: HeroSystemVisualConfig;
-  technologyMarquee: TechnologyMarqueeConfig;
+  technologyDna: TechnologyDnaConfig;
 }
 
 export const homeConfig = {
@@ -68,9 +68,9 @@ export const homeConfig = {
     },
     stages: ['Investigar', 'Conectar', 'Construir', 'Operar'],
   },
-  technologyMarquee: {
+  technologyDna: {
     label: 'Tecnologías',
-    durationSeconds: 45,
+    rotationSeconds: 24,
 
     "items": [
       "Python",
