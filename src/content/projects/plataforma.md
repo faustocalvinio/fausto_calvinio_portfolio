@@ -2,7 +2,7 @@
 title: Plataforma Multi-Rubro de Agentes IA
 slug: plataforma-multi-rubro-agentes
 category: IA aplicada
-summary: Arquitectura de 55 crews y aproximadamente 270 agentes distribuidos en ocho dominios.
+summary: MVP funcional para coordinar agentes especializados en tareas de distintos rubros, con datos de prueba y salidas de muestra.
 problem: Explorar problemas de distintos rubros requiere conocimiento especializado, herramientas y flujos que no caben en un único agente.
 solution: Una plataforma CrewAI con crews contables, legales, inmobiliarios, de salud, RRHH, marketing, tecnología y educación, ejecutable con seed data y outputs de muestra.
 status: MVP funcional; crews principales estables y especializadas en progreso.
@@ -16,6 +16,8 @@ visuals: [{type: placeholder, caption: 'Diagrama de arquitectura multi-rubro'}]
 ### Una arquitectura para aprender
 
 Cada dominio agrupa crews con roles especializados, tareas coordinadas y herramientas seleccionadas. La siguiente iteración suma tests, más seed data y un frontend unificado.
+
+La arquitectura reúne 55 crews y aproximadamente 270 agentes en ocho dominios. Estas cifras describen la organización del MVP, no resultados de uso en producción.
 
 ### Dominios
 

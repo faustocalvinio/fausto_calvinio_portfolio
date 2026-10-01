@@ -6,7 +6,7 @@ const workflows = [
     title: 'Lead entrante → oportunidad comercial',
     eyebrow: 'Ventas · CRM',
     description: 'Captura, enriquece y prioriza cada consulta antes de que llegue al equipo comercial.',
-    outcome: 'El vendedor recibe el contacto, su contexto y el próximo paso en el CRM.',
+    outcome: 'El vendedor recibiría el contacto, su contexto y el próximo paso en el CRM.',
     nodes: [
       { icon: '↗', name: 'Webhook', detail: 'Formulario web', tone: 'coral' },
       { icon: '{}', name: 'Normalizar', detail: 'Email · empresa', tone: 'blue' },
@@ -23,7 +23,7 @@ const workflows = [
     title: 'Factura recibida → aprobación y registro',
     eyebrow: 'Finanzas · Backoffice',
     description: 'Lee adjuntos, extrae datos y deriva sólo las excepciones para revisión humana.',
-    outcome: 'La factura válida queda registrada; los casos dudosos esperan aprobación con todo el contexto.',
+    outcome: 'La factura válida quedaría registrada; los casos dudosos esperarían aprobación con todo el contexto.',
     nodes: [
       { icon: 'M', name: 'Gmail', detail: 'Nuevo adjunto', tone: 'coral' },
       { icon: 'PDF', name: 'Extraer', detail: 'OCR + campos', tone: 'blue' },
@@ -40,7 +40,7 @@ const workflows = [
     title: 'Consulta de cliente → respuesta con contexto',
     eyebrow: 'Soporte · RAG',
     description: 'Clasifica el mensaje, busca conocimiento autorizado y decide si responder o escalar.',
-    outcome: 'Las consultas conocidas se resuelven rápido; las sensibles llegan a una persona con el historial completo.',
+    outcome: 'Las consultas conocidas recibirían una respuesta con fuentes; las sensibles llegarían a una persona con su historial.',
     nodes: [
       { icon: 'W', name: 'WhatsApp', detail: 'Mensaje entrante', tone: 'green' },
       { icon: 'AI', name: 'Clasificar', detail: 'Tema + urgencia', tone: 'violet' },
@@ -57,10 +57,10 @@ const workflows = [
 <section class="workflow-showcase" aria-labelledby="workflow-title">
   <div class="workflow-intro">
     <div>
-      <p class="workflow-kicker">Automatizaciones en acción</p>
+      <p class="workflow-kicker">Ejemplos de automatización</p>
       <h2 id="workflow-title">Un proceso completo, no sólo nodos conectados</h2>
     </div>
-    <p>Cada flujo combina disparadores, reglas de negocio, integraciones y puntos de control. Elegí un caso para ver cómo viaja la información.</p>
+    <p>Estos diagramas ilustran flujos posibles con reglas de negocio, integraciones y puntos de control. Elegí un ejemplo para recorrer el proceso; no ejecuta conexiones reales.</p>
   </div>
 
   <div class="workflow-tabs" role="tablist" aria-label="Casos de uso">
@@ -73,8 +73,8 @@ const workflows = [
 
   <div class="workflow-stage">
     <div class="stage-toolbar" aria-hidden="true">
-      <div class="stage-brand"><span class="n8n-mark">n8n</span><span>Production workflow</span></div>
-      <div class="execution-state"><i></i> Ejecución completada</div>
+      <div class="stage-brand"><span class="n8n-mark">n8n</span><span>Flujo de ejemplo</span></div>
+      <div class="execution-state"><i></i> Recorrido ilustrativo</div>
     </div>
 
     {workflows.map((workflow, index) => (
@@ -91,7 +91,7 @@ const workflows = [
                 <div class="workflow-node" style={`--node-delay:${nodeIndex * 0.42}s`}>
                   <span class={`node-icon ${node.tone}`}>{node.icon}</span>
                   <span class="node-copy"><strong>{node.name}</strong><small>{node.detail}</small></span>
-                  <span class="node-check" aria-label="Ejecutado">✓</span>
+                  <span class="node-check" aria-hidden="true">✓</span>
                   <i class="node-port in"></i><i class="node-port out"></i>
                 </div>
                 {nodeIndex < workflow.nodes.length - 1 && <div class="workflow-connection" aria-hidden="true" style={`--pulse-delay:${nodeIndex * 0.42}s`}><span></span></div>}
@@ -101,7 +101,7 @@ const workflows = [
         </div>
 
         <div class="workflow-result">
-          <div><span>Resultado operativo</span><strong>{workflow.outcome}</strong></div>
+          <div><span>Salida prevista</span><strong>{workflow.outcome}</strong></div>
           <ul>{workflow.steps.map(step => <li>{step}</li>)}</ul>
         </div>
       </article>

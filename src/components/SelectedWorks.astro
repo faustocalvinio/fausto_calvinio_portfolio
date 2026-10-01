@@ -46,7 +46,10 @@ const projects =
               </p>
             </div>
             <div>
-              <p>{project.data.summary}</p>
+              <dl class="case-story">
+                <div><dt>Problema</dt><dd>{project.data.problem}</dd></div>
+                <div><dt>Solución</dt><dd>{project.data.solution}</dd></div>
+              </dl>
               <ul class="tags">
                 {project.data.stack
                   .slice(0, config.stackLimit)
@@ -68,6 +71,9 @@ const projects =
 </section>
 
 <style>
+  .case-story { display: grid; gap: 1rem; margin: 0 0 1.5rem; }
+  .case-story dt { color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .35rem; }
+  .case-story dd { margin: 0; color: var(--ink-soft); }
   .project-case-link {
     --case-text: #123458;
     --case-line: #bdc9d9;
