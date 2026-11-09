@@ -7,13 +7,13 @@ export const seoConfig = {
     name: 'Fausto Calviño',
     shortName: 'Fausto Calviño',
     description:
-      'Fausto Calviño: desarrollo de productos web, integraciones, automatizaciones e IA aplicada. Casos de Hanexa CRM, puntos y beneficios, y Carta Digital ALEM.',
+      'Portfolio de Fausto Calviño, ingeniero de software especializado en sistemas multiagente, agentes de IA, automatización y desarrollo a medida.',
   },
   author: {
     name: 'Fausto Calviño',
     givenName: 'Fausto',
     familyName: 'Calviño',
-    jobTitle: 'Desarrollador de software',
+    jobTitle: 'Ingeniero de software',
     email: 'faustocalvino@outlook.com',
     countryName: 'Argentina',
     countryCode: 'AR',
@@ -34,13 +34,13 @@ export const seoConfig = {
     },
   },
   defaults: {
-    title: 'Fausto Calviño — Desarrollo de software, productos e IA aplicada',
+    title: 'Fausto Calviño — Software, IA y automatización de procesos',
     titleTemplate: '%s — Fausto Calviño',
     description:
-      'Construyo productos web, automatizaciones y soluciones con IA, desde la definición del problema hasta la implementación. Explorá mis proyectos y mi experiencia.',
+      'Ingeniero de software especializado en sistemas multiagente, agentes IA, automatización n8n y desarrollos a medida.',
     image: {
       src: '/og.png',
-      alt: 'Fausto Calviño — Software para conectar procesos, equipos y clientes',
+      alt: 'Fausto Calviño — Sistemas de IA, automatización y software',
       width: 1200,
       height: 630,
       type: 'image/png',

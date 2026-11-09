@@ -17,20 +17,6 @@ interface Props {
 }
 
 const { articles, currentPage, totalPages, totalArticles } = Astro.props;
-const groups = [
-  {
-    id: 'notas-propias',
-    title: 'Notas propias',
-    description: 'Apuntes, conceptos y ejemplos de mi recorrido de aprendizaje.',
-    articles: articles.filter((article) => !article.data.externalUrl),
-  },
-  {
-    id: 'lecturas-externas',
-    title: 'Lecturas externas',
-    description: 'Referencias de otras personas que guardé para aprender. Cada enlace lleva a su fuente original.',
-    articles: articles.filter((article) => Boolean(article.data.externalUrl)),
-  },
-].filter((group) => group.articles.length > 0);
 const toPreview = (body: string | undefined, fallback: string) => {
   if (!body) return fallback;
   const text = body
@@ -86,34 +72,27 @@ const structuredData = [
         <a class="back" href="/">← Volver al inicio</a>
         <p class="eyebrow">Notas</p>
         <h1>Aprendizajes en público</h1>
-        <p class="lede">Apuntes propios sobre desarrollo y una selección de lecturas de otras personas, con sus fuentes identificadas.</p>
+        <p class="lede">Ideas, decisiones y aprendizajes sobre agentes IA, automatización e ingeniería de software aplicada.</p>
       </div>
     </header>
 
     <section class="section">
       <div class="container notes-index">
-        <p class="notes-count">{totalArticles} entradas publicadas · mostrando {firstArticle}–{lastArticle}</p>
-        {groups.map((group) => (
-          <section class="notes-group" aria-labelledby={group.id}>
-            <h2 id={group.id}>{group.title}</h2>
-            <p class="group-description">{group.description}</p>
-            <div class="article-list notes-list">
-          {group.articles.map((article) => (
+        <p class="notes-count">{totalArticles} notas publicadas · mostrando {firstArticle}–{lastArticle}</p>
+        <div class="article-list notes-list">
+          {articles.map((article: any) => (
             <a class="article-row" href={article.data.externalUrl ?? `/notas/${article.data.slug}/`} target={article.data.externalUrl ? '_blank' : undefined} rel={article.data.externalUrl ? 'noreferrer' : undefined}>
               <span class="article-date">{article.data.publishedAt}</span>
               <div class="note-summary">
-                <h3>{article.data.title}</h3>
+                <h2>{article.data.title}</h2>
                 <p>{article.data.excerpt}</p>
                 {!article.data.externalUrl && <p class="note-preview"><span aria-hidden="true">Vista previa · </span>{toPreview(article.body, article.data.excerpt)}</p>}
-                {article.data.externalUrl && <span class="source-label">Fuente: {new URL(article.data.externalUrl).hostname.replace(/^www\./, '')} ↗</span>}
-                <ul class="tags">{article.data.tags.map((tag) => <li>{tag}</li>)}</ul>
+                <ul class="tags">{article.data.tags.map((tag: string) => <li>{tag}</li>)}</ul>
               </div>
               <span class="case-link" aria-hidden="true">{article.data.externalUrl ? '↗' : '→'}</span>
             </a>
           ))}
-            </div>
-          </section>
-        ))}
+        </div>
 
         {totalPages > 1 && <nav class="pagination" aria-label="Paginación de notas">
           {currentPage > 1 && <a class="pagination-link" href={pageHref(currentPage - 1)}>← Anterior</a>}
@@ -129,12 +108,3 @@ const structuredData = [
   </main>
   <Footer />
 </Layout>
-
-<style>
-  .notes-group + .notes-group { margin-top: 4rem; }
-  .notes-group > h2 { margin: 0 0 .8rem; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); }
-  .group-description { max-width: 62ch; margin: 0 0 1.5rem; color: var(--muted); }
-  .note-summary h3 { margin: 0; font: 400 clamp(1.35rem, 1.1rem + .7vw, 1.75rem)/1.15 var(--font-display); letter-spacing: -.02em; }
-  .article-row:hover h3, .article-row:focus-visible h3 { color: var(--accent); }
-  .source-label { display: block; margin-block: .7rem; color: var(--accent-ink); font-size: .8rem; }
-</style>

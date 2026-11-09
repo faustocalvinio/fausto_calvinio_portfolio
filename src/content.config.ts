@@ -14,8 +14,6 @@ const projects = defineCollection({
     problem: z.string(),
     solution: z.string(),
     status: z.string(),
-    role: z.string().optional(),
-    disclaimer: z.string().optional(),
     featured: z.boolean().default(false),
     hidden: z.boolean().default(false),
     year: z.string(),
@@ -32,12 +30,6 @@ const projects = defineCollection({
         z.object({
           type: z.string(),
           caption: z.string(),
-          src: z.string().regex(/^\/(?!\/)/).optional(),
-          alt: z.string().min(1).optional(),
-          width: z.number().int().positive().optional(),
-          height: z.number().int().positive().optional(),
-        }).refine((visual) => !visual.src || Boolean(visual.alt?.trim()), {
-          message: 'Las capturas con src necesitan un texto alternativo.',
         }),
       )
       .default([]),
@@ -73,7 +65,6 @@ const services = defineCollection({
     description: z.string(),
     deliverables: z.array(z.string()),
     technologies: z.array(z.string()),
-    relatedProjects: z.array(z.string()).default([]),
     featured: z.boolean().default(false),
   }),
 });

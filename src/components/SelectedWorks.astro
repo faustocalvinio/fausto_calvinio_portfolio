@@ -25,11 +25,6 @@ const projects =
             b.data.year.localeCompare(a.data.year),
         )
         .slice(0, config.selection.limit);
-
-const selectedSlugs = new Set(projects.map((project) => project.data.slug));
-const otherProjects = publicProjects
-  .filter((project) => !selectedSlugs.has(project.data.slug))
-  .sort((a, b) => b.data.year.localeCompare(a.data.year));
 ---
 
 <section class="section section-alt" id={config.id}>
@@ -42,26 +37,19 @@ const otherProjects = publicProjects
 
     <div class="case-list">
       {
-        projects.map((project) => {
-          const images = project.data.visuals.filter((visual) => visual.type === 'image' && visual.src);
-          const preview = images.find((visual) => (visual.width ?? 0) > (visual.height ?? 0)) ?? images[0];
-          return (
-          <article class="case" id={project.data.slug === 'plataforma-multi-rubro-agentes' ? 'plataforma' : undefined}>
+        projects.map((project) => (
+          <article class="case">
             <div>
               <h3>{project.data.title}</h3>
               <p class="case-meta">
                 {project.data.category} · {project.data.year} · {project.data.status}
               </p>
-              {preview && <a class="case-preview" href={'/proyectos/' + project.data.slug + '/'} aria-label={'Ver caso: ' + project.data.title}>
-                <img src={preview.src} alt={preview.alt} width={preview.width} height={preview.height} loading="lazy" decoding="async" />
-              </a>}
             </div>
             <div>
               <dl class="case-story">
                 <div><dt>Problema</dt><dd>{project.data.problem}</dd></div>
                 <div><dt>Solución</dt><dd>{project.data.solution}</dd></div>
               </dl>
-              {project.data.role && <p class="case-role"><strong>Mi aporte</strong> {project.data.role}</p>}
               <ul class="tags">
                 {project.data.stack
                   .slice(0, config.stackLimit)
@@ -76,42 +64,13 @@ const otherProjects = publicProjects
               </a>
             </div>
           </article>
-          );
-        })
+        ))
       }
     </div>
-    {otherProjects.length > 0 && (
-      <div class="other-work">
-        <h3>Otros trabajos y exploraciones</h3>
-        <p>Automatizaciones, desarrollo full-stack y sitios que forman parte de mi recorrido.</p>
-        <ul>
-          {otherProjects.map((project) => (
-            <li>
-              <a href={'/proyectos/' + project.data.slug + '/'}>
-                <span>{project.data.title}<small>{project.data.category} · {project.data.year}</small></span>
-                <span aria-hidden="true">↗</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    )}
   </div>
 </section>
 
 <style>
-  .case-preview { display: block; margin-top: 1.5rem; border: 1px solid var(--line-strong); background: var(--bg); }
-  .case-preview img { width: 100%; height: 15rem; padding: .75rem; object-fit: contain; }
-  .case-role { font-size: .9rem; margin: 0 0 1.5rem; }
-  .case-role strong { display: block; margin-bottom: .35rem; color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
-  .other-work { margin-top: 3rem; }
-  .other-work h3 { margin-bottom: .7rem; }
-  .other-work > p { color: var(--muted); }
-  .other-work ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2.5rem; list-style: none; margin: 1.5rem 0 0; padding: 0; }
-  .other-work a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 100%; padding-block: 1.1rem; border-top: 1px solid var(--line-strong); text-decoration: none; }
-  .other-work a:hover, .other-work a:focus-visible { color: var(--accent); }
-  .other-work small { display: block; margin-top: .25rem; color: var(--muted); font-size: .8rem; }
-  @media (max-width: 720px) { .other-work ul { grid-template-columns: 1fr; } }
   .case-story { display: grid; gap: 1rem; margin: 0 0 1.5rem; }
   .case-story dt { color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .35rem; }
   .case-story dd { margin: 0; color: var(--ink-soft); }

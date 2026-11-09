@@ -11,8 +11,8 @@ const emailHref = `mailto:${seoConfig.author.email}`;
       <img class="brand-logo" src="/favicon.png" alt="" width="24" height="24" />
       <span class="brand-name">{seoConfig.site.name}</span>
     </a>
-    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="main-navigation"><span></span><span></span><span></span></button>
-    <nav class="site-nav" id="main-navigation" aria-label="Navegación principal">
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="site-nav" aria-label="Navegación principal">
       <ul>
         {
           siteConfig.navigation.map((item) => (
@@ -30,19 +30,9 @@ const emailHref = `mailto:${seoConfig.author.email}`;
   b?.addEventListener('click', () => {
     const open = n.classList.toggle('open');
     b.setAttribute('aria-expanded', String(open));
-    b.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
   });
   n?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
     n.classList.remove('open');
     b?.setAttribute('aria-expanded', 'false');
-    b?.setAttribute('aria-label', 'Abrir menú');
   }));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && n?.classList.contains('open')) {
-      n.classList.remove('open');
-      b?.setAttribute('aria-expanded', 'false');
-      b?.setAttribute('aria-label', 'Abrir menú');
-      b?.focus();
-    }
-  });
 </script>

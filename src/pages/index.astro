@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import HeroSystemVisual from '../components/HeroSystemVisual.astro';
+
+import MultiAgentArchitectureCanvas from '../components/MultiAgentArchitectureCanvas.astro';
 import SelectedWorks from '../components/SelectedWorks.astro';
 import TechnologyDna from '../components/TechnologyDna.astro';
 import { homeConfig } from '../config/home';
@@ -11,216 +13,45 @@ import { seoConfig } from '../config/seo';
 import Layout from '../layouts/Layout.astro';
 
 const articles = (await getCollection('articles'))
-  .filter((article) => article.data.status === 'published' && !article.data.externalUrl)
+  .filter((article) => article.data.status !== 'draft')
   .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt))
   .slice(0, siteConfig.content.homeNotesLimit);
 const services = await getCollection('services');
-const projects = (await getCollection('projects')).filter((project) => !project.data.hidden);
-const mainProject = projects.find((project) => project.data.slug === 'hanexa-crm');
-const conversation = mainProject?.data.visuals.find((visual) => visual.src?.includes('/conversacion.'));
-const experience = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
-const emailHref = 'mailto:' + seoConfig.author.email;
-const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig.contact.projectEmailSubject);
+const experience = (await getCollection('experience')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const emailHref = `mailto:${seoConfig.author.email}`;
+const projectEmailHref = `${emailHref}?subject=${encodeURIComponent(
+  siteConfig.contact.projectEmailSubject,
+)}`;
 ---
+<Layout type="profile" pageSchemaType="ProfilePage"><Header /><main>
+<section class="hero section" id="inicio"><div class="container hero-layout"><div class="hero-copy"><h1>Convierto procesos complejos en <span class="accent">sistemas de IA</span> que trabajan con tu equipo</h1><p class="hero-sub">Conecto herramientas, organizo información dispersa y automatizo tareas repetitivas. Diseño software y agentes de IA a partir de tu proceso, con un alcance claro y puntos de revisión para tu equipo.</p><p class="status">{siteConfig.contact.availability}</p><div class="hero-actions"><a class="btn btn-primary" href={projectEmailHref}>Hablemos de tu proceso</a><a class="btn btn-ghost" href="#proyectos">Ver proyectos</a></div></div><div class="hero-visual-wrap"><HeroSystemVisual {...homeConfig.heroSystemVisual} /></div></div></section>
+<section class="section section-alt" id="servicios"><div class="container"><div class="section-head"><p class="eyebrow">Qué puedo construir</p><h2>Automatización con criterio de ingeniería</h2><p class="lede">Partimos de la tarea que te frena y definimos qué conviene automatizar, integrar o desarrollar. Cada solución incluye entregas concretas y documentación para tu equipo.</p></div><div class="cards">{services.map(s=><article class="card"><h3>{s.data.title}</h3><p><strong>{s.data.shortDescription}</strong></p><p>{s.data.description}</p><div class="service-deliverables"><h4>Qué te llevás</h4><ul>{s.data.deliverables.map(deliverable=><li>{deliverable}</li>)}</ul></div><ul class="tags">{s.data.technologies.map(t=><li>{t}</li>)}</ul></article>)}</div></div></section>
+<section class="section" id="plataforma"><div class="container"><div class="feature feature-stacked" style="grid-template-columns:1fr"><div style="max-width:68ch"><p class="eyebrow">Caso principal</p><h3>Plataforma Multi-Rubro de Agentes IA</h3><p>Un MVP funcional para explorar cómo coordinar agentes especializados en tareas de distintos rubros. Se ejecuta con datos de prueba y salidas de muestra; las crews principales están estables y las especializadas siguen en desarrollo.</p><a class="case-link" href="/proyectos/plataforma-multi-rubro-agentes/">Explorar la arquitectura →</a></div><div><div class="stat-grid"><div class="stat"><strong>55</strong><span>crews</span></div><div class="stat"><strong>~270</strong><span>agentes</span></div><div class="stat"><strong>8</strong><span>dominios</span></div></div><MultiAgentArchitectureCanvas /></div></div></div></section>
+<TechnologyDna {...homeConfig.technologyDna} />
+<SelectedWorks />
+<section class="section" id="enfoque"><div class="container manifesto-grid"><div class="manifesto-head"><p class="eyebrow">Enfoque</p><h2>Entender antes de construir</h2></div><ol class="manifesto-list"><li>Entiendo el problema de fondo antes de definir una solución.</li><li>Investigo y aprendo lo necesario para avanzar con criterio.</li><li>Comunico decisiones, límites y avances con claridad durante todo el proceso.</li><li>Diseño para quien usa el sistema y para quien debe mantenerlo.</li><li>Construyo soluciones simples, útiles y preparadas para evolucionar.</li></ol></div></section>
+<section class="section section-alt" id="sobre-mi"><div class="container about-grid"><div class="about-copy"><p class="eyebrow">Sobre mí</p><h2>Software, sistemas y aprendizaje continuo</h2><p class="lede">Construyo software, automatizaciones e integraciones para conectar herramientas y convertir tareas dispersas en procesos claros. Combino desarrollo full-stack con Python, CrewAI y n8n para abordar desde una integración puntual hasta un sistema de agentes.</p><p class="lede">Empecé construyendo productos web, sitios autogestionables y e-commerce. Esa experiencia me enseñó que una solución útil no se mide solo por la tecnología: tiene que ser clara para quien la usa, sostenible para quien la mantiene y conectarse con el trabajo real del equipo.</p><p class="lede">Desde mediados de 2021 me formo como Software Engineer de manera autodidacta. Mi base está en React, Next.js, Node.js y bases de datos; hoy la extiendo hacia IA aplicada, con interés en definir responsabilidades, límites y formas de evaluar cada solución.</p><div class="about-actions"><a class="btn btn-ghost" href="#proyectos">Ver proyectos seleccionados</a><a class="case-link" href={emailHref}>Hablemos de tu proceso →</a></div></div><aside class="about-sidebar"><p class="eyebrow">Recorrido</p><div class="about-timeline">{experience.map(item=><article class="about-item"><h3>{item.data.title}</h3><p>{item.data.description}</p>{item.data.link&&<a class="case-link" href={item.data.link}>Ver más →</a>}</article>)}</div></aside></div></section>
+<section class="section" id="notas"><div class="container"><div class="section-head"><p class="eyebrow">Notas</p><h2>Aprendizajes en público</h2></div><div class="article-list">{articles.map(a=><a class="article-row" href={a.data.externalUrl??`/notas/${a.data.slug}/`} target={a.data.externalUrl?'_blank':undefined} rel={a.data.externalUrl?'noreferrer':undefined}><span class="article-date">{a.data.publishedAt}</span><h3>{a.data.title}</h3><span class="case-link">{a.data.externalUrl?'↗':'→'}</span></a>)}</div><div class="article-list-action"><a class="btn btn-ghost" href="/notas/">Ver todas las notas →</a></div></div></section>
+<section class="section contact-section" id="contacto"><div class="container"><div class="contact-showcase"><div class="contact-copy"><p class="eyebrow">Contacto</p><h2>¿Qué proceso te gustaría mejorar?</h2><p class="lede">Contame qué parte de tu operación es repetitiva, lenta o difícil de conectar. Podemos pensar una primera arquitectura, definir el alcance y convertirlo en un sistema que realmente ayude a tu equipo.</p><div class="contact-actions"><a class="btn btn-primary" href={projectEmailHref}>Empecemos por email <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href={siteConfig.contact.cvPath} target="_blank" rel="noreferrer">Ver CV</a></div></div><div class="contact-links contact-network"><a class="contact-link" href={emailHref}><small>Escribime</small><span>{seoConfig.author.email}</span><b aria-hidden="true">↗</b></a><a class="contact-link" href={seoConfig.social.linkedin.url} target="_blank" rel="me noreferrer"><small>Conectemos</small><span>{seoConfig.social.linkedin.label}</span><b aria-hidden="true">↗</b></a><a class="contact-link" href={seoConfig.social.github.url} target="_blank" rel="me noreferrer"><small>Explorá el código</small><span>{seoConfig.social.github.label}</span><b aria-hidden="true">↗</b></a><a class="contact-link" href={seoConfig.social.telegram.url} target="_blank" rel="me noreferrer"><small>Mensaje directo</small><span>Telegram · @faustocalvinio</span><b aria-hidden="true">↗</b></a></div></div></div></section>
 
-<Layout type="profile" pageSchemaType="ProfilePage">
-  <Header />
-  <main>
-    <section class="hero section" id="inicio">
-      <div class="container hero-copy">
-        <p class="eyebrow">Fausto Calviño · Desarrollo de software</p>
-        <h1>Desarrollo software para conectar <span class="accent">procesos, equipos y clientes.</span></h1>
-        <p class="hero-sub">Construyo productos web, automatizaciones y soluciones con IA, desde la definición del problema hasta la implementación.</p>
-        <p class="status">{siteConfig.contact.availability}</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#proyectos">Ver productos y proyectos</a>
-          <a class="btn btn-ghost" href={projectEmailHref}>Hablemos de tu proyecto</a>
-        </div>
-        <a class="hero-cv" href={siteConfig.contact.cvPath} target="_blank" rel="noreferrer">Ver mi CV <span aria-hidden="true">↗</span></a>
-      </div>
-    </section>
-
-    {mainProject && <section class="section section-alt main-case" id="caso-principal" aria-labelledby="main-case-title">
-      <div class="container">
-        <div class="main-case-layout">
-          <div class="main-case-copy">
-            <p class="eyebrow">Caso principal · Producto propio</p>
-            <h2 id="main-case-title">Hanexa CRM</h2>
-            <p class="lede">De una consulta a una conversación que el equipo puede continuar.</p>
-            <p>Una bandeja para atender, un bot conectado al catálogo y un pipeline para dar seguimiento. Construí el producto desde los flujos de atención hasta la interfaz, los datos y las integraciones.</p>
-            <p class="main-case-status">{mainProject.data.status}</p>
-            <a class="case-link" href="/proyectos/hanexa-crm/">Ver el caso y las capturas <span aria-hidden="true">→</span></a>
-          </div>
-          {conversation && <figure class="main-case-figure">
-            <a href="/proyectos/hanexa-crm/" aria-label="Explorar el caso Hanexa CRM">
-              <img src={conversation.src} alt={conversation.alt} width={conversation.width} height={conversation.height} loading="lazy" decoding="async" />
-            </a>
-            <figcaption>Interfaz real · nombres y marca de ejemplo. El bot responde y pregunta para entender la necesidad.</figcaption>
-          </figure>}
-        </div>
-        <ol class="product-journey" aria-label="Recorrido de atención en Hanexa">
-          <li><span>Entrada</span><strong>Llega una consulta</strong><p>La conversación y el contacto quedan en el mismo sistema.</p></li>
-          <li><span>Atención</span><strong>La IA responde con contexto</strong><p>El bot utiliza información del producto para continuar el intercambio.</p></li>
-          <li><span>Seguimiento</span><strong>El equipo puede intervenir</strong><p>Una persona toma la atención y organiza el próximo paso.</p></li>
-        </ol>
-      </div>
-    </section>}
-
-    <SelectedWorks />
-
-    <section class="section" id="herramientas" aria-labelledby="tools-title">
-      <div class="container">
-        <div class="section-head">
-          <p class="eyebrow">Cómo los construyo</p>
-          <h2 id="tools-title">Las herramientas detrás de los productos</h2>
-          <p class="lede">Combino interfaces, datos, integraciones y automatización según lo que necesita cada proyecto. El mapa reúne las tecnologías de mi práctica y mis exploraciones.</p>
-        </div>
-        <HeroSystemVisual {...homeConfig.heroSystemVisual} />
-      </div>
-    </section>
-    <TechnologyDna {...homeConfig.technologyDna} />
-
-    <section class="section section-alt" id="servicios">
-      <div class="container">
-        <div class="section-head">
-          <p class="eyebrow">Qué puedo construir</p>
-          <h2>Software e IA para el trabajo real</h2>
-          <p class="lede">Partimos del problema y definimos qué conviene desarrollar, integrar o automatizar. Cada solución incluye entregas concretas y documentación para tu equipo.</p>
-        </div>
-        <div class="cards">
-          {services.map((service) => (
-            <article class="card">
-              <h3>{service.data.title}</h3>
-              <p><strong>{service.data.shortDescription}</strong></p><p>{service.data.description}</p>
-              <div class="service-deliverables"><h4>Qué te llevás</h4><ul>{service.data.deliverables.map((deliverable) => <li>{deliverable}</li>)}</ul></div>
-              <ul class="tags">{service.data.technologies.map((technology) => <li>{technology}</li>)}</ul>
-              <div class="service-evidence">
-                <span>Explorá un ejemplo</span>
-                {service.data.relatedProjects.map((slug) => projects.find((project) => project.data.slug === slug)).filter(Boolean).map((project) => (
-                  <a href={'/proyectos/' + project!.data.slug + '/'}>{project!.data.title} <span aria-hidden="true">→</span></a>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="enfoque">
-      <div class="container manifesto-grid">
-        <div class="manifesto-head"><p class="eyebrow">Enfoque</p><h2>Entender antes de construir</h2></div>
-        <ol class="manifesto-list">
-          <li>Entiendo el problema de fondo antes de definir una solución.</li>
-          <li>Investigo y aprendo lo necesario para avanzar con criterio.</li>
-          <li>Comunico decisiones, límites y avances con claridad durante todo el proceso.</li>
-          <li>Diseño para quien usa el sistema y para quien debe mantenerlo.</li>
-          <li>Construyo soluciones simples, útiles y preparadas para evolucionar.</li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="section section-alt" id="sobre-mi">
-      <div class="container about-grid">
-        <div class="about-copy">
-          <p class="eyebrow">Sobre mí</p><h2>Del problema a un producto que se puede usar</h2>
-          <p class="lede">Soy Fausto Calviño. Desarrollo productos web, integraciones y automatizaciones. Me interesa trabajar en el recorrido completo: entender qué necesita una persona o un equipo, definir cómo resolverlo y construir el sistema que lo hace posible.</p>
-          <p class="lede">Empecé con sitios autogestionables y e-commerce. Hoy esa experiencia convive con productos como Hanexa CRM, puntos y beneficios y Carta Digital ALEM, además de mi laboratorio de agentes de IA.</p>
-          <p class="lede">Desde mediados de 2021 aprendo de forma autodidacta. Mi base está en React, Next.js, Node.js y bases de datos; la extiendo con Python, n8n e IA aplicada. El aprendizaje acompaña el trabajo de desarrollar, integrar y mantener cada solución.</p>
-          <div class="about-actions">
-            <a class="btn btn-ghost" href={siteConfig.contact.cvPath} target="_blank" rel="noreferrer">Ver CV</a>
-            <a class="case-link" href={seoConfig.social.github.url} target="_blank" rel="me noreferrer">Explorar mi código ↗</a>
-          </div>
-        </div>
-        <aside class="about-sidebar" aria-label="Experiencia y recorrido">
-          <p class="eyebrow">Recorrido</p>
-          <div class="about-timeline">
-            {experience.map((item) => (
-              <article class="about-item">
-                <p class="experience-period">{item.data.period}</p><h3>{item.data.title}</h3><p>{item.data.description}</p>
-                {item.data.link && <a class="case-link" href={item.data.link}>Ver más →</a>}
-              </article>
-            ))}
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="section" id="notas">
-      <div class="container">
-        <div class="section-head">
-          <p class="eyebrow">Notas propias</p><h2>Aprendizajes en público</h2>
-          <p class="lede">Apuntes de desarrollo y conceptos que voy trabajando. El archivo también reúne referencias de otras personas, identificadas como lecturas externas.</p>
-        </div>
-        <div class="article-list">
-          {articles.map((article) => (
-            <a class="article-row" href={'/notas/' + article.data.slug + '/'}><span class="article-date">{article.data.publishedAt}</span><h3>{article.data.title}</h3><span class="case-link" aria-hidden="true">→</span></a>
-          ))}
-        </div>
-        <div class="article-list-action"><a class="btn btn-ghost" href="/notas/">Ver notas y lecturas →</a></div>
-      </div>
-    </section>
-
-    <section class="section contact-section" id="contacto">
-      <div class="container">
-        <div class="contact-showcase">
-          <div class="contact-copy">
-            <p class="eyebrow">Contacto</p><h2>¿Qué podemos construir?</h2>
-            <p class="lede">Si necesitás desarrollar un producto, conectar herramientas o mejorar un proceso, contame en qué estás trabajando. También estoy abierto a sumarme a un equipo de desarrollo.</p>
-            <div class="contact-actions">
-              <a class="btn btn-primary" href={projectEmailHref}>Empecemos por email <span aria-hidden="true">→</span></a>
-              <a class="btn btn-ghost" href={siteConfig.contact.cvPath} target="_blank" rel="noreferrer">Ver CV</a>
-            </div>
-          </div>
-          <div class="contact-links contact-network">
-            <a class="contact-link" href={emailHref}><small>Escribime</small><span>{seoConfig.author.email}</span><b aria-hidden="true">↗</b></a>
-            <a class="contact-link" href={seoConfig.social.linkedin.url} target="_blank" rel="me noreferrer"><small>Conectemos</small><span>{seoConfig.social.linkedin.label}</span><b aria-hidden="true">↗</b></a>
-            <a class="contact-link" href={seoConfig.social.github.url} target="_blank" rel="me noreferrer"><small>Explorá el código</small><span>{seoConfig.social.github.label}</span><b aria-hidden="true">↗</b></a>
-            <a class="contact-link" href={seoConfig.social.telegram.url} target="_blank" rel="me noreferrer"><small>Mensaje directo</small><span>Telegram · @faustocalvinio</span><b aria-hidden="true">↗</b></a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-  <Footer />
-</Layout>
-
+</main><Footer />
 <style>
-  .hero { position: relative; padding-top: clamp(3.5rem, 7vw, 6rem); padding-bottom: clamp(3.5rem, 7vw, 6rem); }
-  .hero h1 { max-width: 22ch; margin: 0 0 1.5rem; font-size: clamp(2.65rem, 1.7rem + 3vw, 4.6rem); }
-  .hero-sub { max-width: 59ch; }
-  .hero .status { margin-bottom: 0; }
-  .hero-actions { margin-top: 1.7rem; }
-  .hero-cv { display: inline-block; margin-top: 1.25rem; color: var(--muted); font-size: .9rem; text-underline-offset: .3em; }
-  .hero-cv:hover, .hero-cv:focus-visible { color: var(--accent-ink); }
-  .main-case { padding-block: clamp(3rem, 6vw, 5rem); }
-  .main-case-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(2rem, 5vw, 4rem); }
-  .main-case-copy h2 { margin: 0 0 1.3rem; font-size: clamp(2rem, 1.5rem + 2.5vw, 3.6rem); }
-  .main-case-copy > p:not(.eyebrow) { color: var(--ink-soft); }
-  .main-case-copy .lede { font-size: clamp(1.2rem, 1rem + .5vw, 1.45rem); }
-  .main-case-copy .main-case-status { margin: 1.5rem 0; color: var(--muted); font-size: .85rem; }
-  .main-case-figure { margin: 0; min-width: 0; }
-  .main-case-figure a { display: block; padding: .75rem; border: 1px solid var(--line-strong); background: var(--bg); }
-  .main-case-figure a:hover, .main-case-figure a:focus-visible { border-color: var(--accent); }
-  .main-case-figure img { width: 100%; height: auto; }
-  .main-case-figure figcaption { margin-top: .8rem; color: var(--muted); font-size: .8rem; }
-  .product-journey { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; list-style: none; margin: 3rem 0 0; padding: 0; }
-  .product-journey li { border-top: 1px solid var(--line-strong); padding-top: 1.1rem; }
-  .product-journey span { display: block; margin-bottom: .5rem; color: var(--accent-ink); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
-  .product-journey strong { display: block; font-weight: 500; }
-  .product-journey p { margin-bottom: 0; color: var(--muted); font-size: .9rem; }
+  .hero{--hero-star:color-mix(in srgb,var(--accent) 46%,transparent);position:relative;isolation:isolate;overflow:hidden;padding-top:clamp(3rem,5vw,4rem);padding-bottom:clamp(4rem,7vw,5.75rem)}
+  .hero:after{position:absolute;z-index:-1;inset:0;background-image:radial-gradient(circle,var(--hero-star) 1px,transparent 1.4px),radial-gradient(circle,color-mix(in srgb,var(--ink) 24%,transparent) .8px,transparent 1.2px);background-position:8px 11px,31px 22px;background-size:53px 53px,89px 89px;content:'';opacity:.42;pointer-events:none;mask-image:linear-gradient(90deg,transparent 2%,rgba(0,0,0,.28) 30%,#000 68%,rgba(0,0,0,.72) 100%)}
+  .hero-layout{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:clamp(2.75rem,5vw,4rem)}
+  .hero-copy{min-width:0;max-width:none}
+  .hero-copy .eyebrow{max-width:36rem}
+  .hero-copy h1{max-width:none;width:100%;margin:0 0 1.4rem;font-size:clamp(2.7rem,1.7rem + 2.2vw,4.15rem)}
+  .hero-copy .hero-sub{max-width:57ch;margin-bottom:1.25rem}
+  .hero-copy .hero-actions{margin-top:1.8rem}
+  .hero-visual-wrap{width:100%;min-width:0}
+  @media(max-width:560px){.hero{padding-top:clamp(3.5rem,12vw,5rem)}.hero-copy h1{font-size:clamp(2.45rem,12vw,3.75rem)}.hero-layout{gap:2.75rem}.hero-actions{display:grid}.hero-actions .btn{width:100%}}
+  @media(prefers-color-scheme:dark){.hero{--hero-star:color-mix(in srgb,var(--accent) 56%,transparent)}}
   .service-deliverables { margin-block: .5rem 1rem; }
   .service-deliverables h4 { margin: 0 0 .5rem; color: var(--muted); font-size: .72rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
   .service-deliverables ul { padding-left: 1.1rem; margin: 0; color: var(--ink-soft); font-size: .9rem; }
   .service-deliverables li + li { margin-top: .25rem; }
-  .service-evidence { display: grid; gap: .5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .85rem; }
-  .service-evidence > span { color: var(--muted); font-size: .75rem; }
-  .service-evidence a { color: var(--accent-ink); text-underline-offset: .25em; }
-  .experience-period { color: var(--muted); font-size: .8rem; }
-  @media (max-width: 860px) { .main-case-layout { grid-template-columns: 1fr; } .main-case-figure { max-width: 38rem; } }
-  @media (max-width: 560px) {
-    .hero h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); }
-    .hero-actions { display: grid; }
-    .hero-actions .btn { width: 100%; }
-    .product-journey { grid-template-columns: 1fr; gap: 1.5rem; }
-  }
 </style>
+</Layout>
