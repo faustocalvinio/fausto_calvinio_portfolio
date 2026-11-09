@@ -6,4 +6,5 @@ description: Desarrollo interfaces, APIs y backends a medida para consultar, car
 deliverables: [Interfaz o API según el alcance, Integración con sistemas existentes, Despliegue y documentación técnica]
 technologies: [Astro, React, Node.js, PostgreSQL]
 featured: false
+relatedProjects: [carta-digital-alem, hanexa-puntos]
 ---
