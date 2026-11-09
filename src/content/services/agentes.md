@@ -6,4 +6,5 @@ description: Desarrollo agentes que investigan, clasifican o redactan con inform
 deliverables: [Prototipo conectado a tus herramientas, Instrucciones y límites del agente, Casos de prueba y evaluación]
 technologies: [Python, CrewAI, Firecrawl, PostgreSQL]
 featured: true
+relatedProjects: [hanexa-crm, plataforma-multi-rubro-agentes]
 ---

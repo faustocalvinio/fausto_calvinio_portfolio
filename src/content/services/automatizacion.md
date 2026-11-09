@@ -6,4 +6,5 @@ description: Mapeo el proceso y conecto formularios, correo, CRM y bases de dato
 deliverables: [Flujo automatizado e integraciones, Alertas y registro de errores, Documentación y entrega al equipo]
 technologies: [n8n, Webhooks, REST APIs, RAG]
 featured: true
+relatedProjects: [hanexa-crm, automatizaciones-n8n]
 ---
