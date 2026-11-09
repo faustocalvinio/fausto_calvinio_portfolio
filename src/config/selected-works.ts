@@ -21,15 +21,16 @@ interface SelectedWorksConfig {
 export const selectedWorksConfig: SelectedWorksConfig = {
   id: 'proyectos',
   eyebrow: 'Trabajos seleccionados',
-  title: 'De la idea al flujo que opera',
+  title: 'Productos, procesos y decisiones',
   description:
-    'Una selección de sistemas multiagente, automatizaciones, productos full-stack y sitios entregados.',
+    'Una selección de productos propios, software para clientes y exploraciones técnicas. En cada caso, el problema, mi aporte y el estado real.',
   selection: {
     mode: 'manual',
     slugs: [
+      'hanexa-crm',
+      'hanexa-puntos',
+      'carta-digital-alem',
       'plataforma-multi-rubro-agentes',
-      'automatizaciones-n8n',
-      'qr-ticketing',
     ],
   },
   stackLimit: 5,

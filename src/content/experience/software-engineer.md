@@ -1,7 +1,7 @@
 ---
-title: Software Engineer en formación continua
-period: Julio 2021 — Actualmente
-description: Desarrollo full-stack con React, Next.js, Node.js y bases de datos, extendiendo la práctica hacia Python, CrewAI, n8n y automatización.
-link: /#sobre-mi
+title: Desarrollo de productos e integraciones
+period: 2026 — Actualmente
+description: Definición, desarrollo e implementación de productos web, APIs y automatizaciones. Hoy trabajo en Hanexa CRM, puntos y beneficios e IA aplicada, sobre una base full-stack.
+link: /proyectos/hanexa-crm/
 order: 1
 ---

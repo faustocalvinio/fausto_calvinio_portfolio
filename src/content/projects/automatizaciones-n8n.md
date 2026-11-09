@@ -6,6 +6,8 @@ summary: Ejemplos de flujos para organizar consultas comerciales, revisar factur
 problem: Equipos que trabajan entre herramientas desconectadas, tareas manuales y poca visibilidad sobre sus procesos.
 solution: Diseño flujos que reciben información, aplican reglas y la llevan a las herramientas del equipo, con alertas y puntos de revisión humana.
 status: Experiencia práctica en prototipos y automatizaciones empresariales.
+role: Diseño de los flujos, reglas de integración, manejo de excepciones y puntos de revisión humana de los ejemplos.
+disclaimer: Los tres flujos son ejemplos operativos. No representan implementaciones atribuidas a clientes ni mediciones de resultados.
 featured: true
 year: '2025–2026'
 stack: [n8n, Webhooks, REST APIs, PostgreSQL, Google Workspace]
