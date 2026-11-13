@@ -1,0 +1,67 @@
+---
+interface Props { animated?: boolean; compact?: boolean; }
+const { animated = true, compact = false } = Astro.props;
+---
+
+<figure class:list={['conversation-preview', { compact }]} data-conversation-preview data-animated={animated ? '' : undefined} aria-label="Representación de una conversación de Hanexa CRM">
+  <div class="conversation-window">
+    <div class="conversation-toolbar"><span class="conversation-brand">hanexa</span><span>Conversación de ejemplo</span></div>
+    <div class="conversation-person">
+      <span class="conversation-avatar" aria-hidden="true">JL</span>
+      <div><strong>Julián López</strong><small>Consulta por WhatsApp</small></div>
+      <span class="conversation-status">IA + equipo</span>
+    </div>
+    <div class="conversation-messages">
+      <p class="message incoming">¡Hola! ¿Tienen la silla Nórdica en negro?<small>23:41</small></p>
+      <p class="message outgoing"><strong>Hanexa · IA</strong>¡Hola, Julián! Sí, tenemos stock en negro. Sale $85.000 y hacemos envíos a todo el país.<small>23:41 · ✓✓</small></p>
+      <p class="message incoming">Buenísimo. ¿Me pueden armar un presupuesto por 12?<small>23:42</small></p>
+      <p class="message outgoing"><strong>Hanexa · IA</strong>¡Claro! Le paso tu consulta al equipo para que te prepare una propuesta por cantidad.<small>23:42 · ✓✓</small></p>
+      <p class="handoff">Derivada al equipo <span aria-hidden="true">→</span> contexto incluido</p>
+    </div>
+  </div>
+  <figcaption>Representación ilustrativa · datos ficticios</figcaption>
+</figure>
+
+<script>
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      if (!reducedMotion.matches) entry.target.setAttribute('data-revealed', '');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: .2 });
+  document.querySelectorAll('[data-conversation-preview][data-animated]').forEach((preview) => observer.observe(preview));
+</script>
+
+<style>
+  .conversation-preview { min-width: 0; margin: 0; }
+  .conversation-window { overflow: hidden; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--bg); box-shadow: 0 16px 44px color-mix(in srgb, var(--ink) 7%, transparent); font-family: var(--font-sans); }
+  .conversation-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .75rem 1rem; border-bottom: 1px solid var(--line); background: var(--bg-alt); color: var(--muted); font-size: .65rem; }
+  .conversation-brand { color: var(--accent-ink); font-size: 1.1rem; font-weight: 600; letter-spacing: -.06em; }
+  .conversation-person { display: flex; align-items: center; gap: .65rem; padding: .85rem 1rem; border-bottom: 1px solid var(--line); }
+  .conversation-avatar { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--accent-tint); color: var(--accent-ink); font-size: .7rem; }
+  .conversation-person strong { display: block; color: var(--ink); font-size: .8rem; font-weight: 500; }
+  .conversation-person small { display: block; color: var(--muted); font-size: .65rem; }
+  .conversation-status { margin-left: auto; color: var(--accent-ink); font-size: .65rem; }
+  .conversation-messages { display: flex; flex-direction: column; gap: .8rem; padding: 1.1rem; background: linear-gradient(140deg, var(--bg), var(--accent-tint)); }
+  .message { max-width: 92%; margin: 0; padding: .7rem .85rem; border: 1px solid var(--line); border-radius: 12px 12px 12px 3px; background: var(--bg); color: var(--ink-soft); font-size: .76rem; line-height: 1.5; }
+  .message strong { display: block; margin-bottom: .2rem; font-size: .6rem; font-weight: 500; }
+  .message small { display: block; margin-top: .3rem; font-size: .6rem; text-align: right; opacity: .8; }
+  .message.outgoing { align-self: flex-end; border-radius: 12px 12px 3px 12px; border-color: transparent; background: var(--accent); color: var(--bg); }
+  .handoff { margin: .1rem 0 0; text-align: center; color: var(--muted); font-size: .65rem; }
+  figcaption { margin-top: .75rem; color: var(--muted); font-size: .72rem; }
+  .compact .conversation-toolbar { padding: .5rem .75rem; }
+  .compact .conversation-person { padding: .6rem .75rem; }
+  .compact .conversation-messages { gap: .5rem; padding: .75rem; }
+  .compact .message { padding: .5rem .65rem; font-size: .67rem; line-height: 1.4; }
+  .compact .message strong { font-size: .55rem; }
+  .compact .message small { margin-top: .15rem; font-size: .5rem; }
+  .compact figcaption { margin-top: .5rem; font-size: .65rem; }
+  [data-revealed] .message { animation: message-in .35s ease both; }
+  [data-revealed] .message:nth-child(2) { animation-delay: .12s; }
+  [data-revealed] .message:nth-child(3) { animation-delay: .24s; }
+  [data-revealed] .message:nth-child(4) { animation-delay: .36s; }
+  @keyframes message-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .message { animation: none !important; } }
+</style>

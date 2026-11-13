@@ -1,9 +1,8 @@
 ---
 import '../styles/global.css';
 import '../styles/font-tester.css';
-import HeroSystemVisual from '../components/HeroSystemVisual.astro';
-import { homeConfig } from '../config/home';
 import { seoConfig } from '../config/seo';
+import ConversationPreview from '../components/ConversationPreview.astro';
 
 const hostname = new URL(seoConfig.site.url).hostname;
 ---
@@ -22,15 +21,19 @@ const hostname = new URL(seoConfig.site.url).hostname;
   <body>
     <main class="social-card">
       <div class="card-copy">
-        <p class="card-eyebrow">{seoConfig.site.name} · Ingeniería de software</p>
-        <h1>Sistemas de IA que <span>trabajan con tu equipo.</span></h1>
-        <p class="card-summary">Agentes, automatización, software e integraciones para convertir procesos complejos en operaciones claras.</p>
+        <p class="card-eyebrow">{seoConfig.site.name} · Desarrollo de software</p>
+        <h1>Desarrollo software para conectar <span>procesos, equipos y clientes.</span></h1>
+        <p class="card-summary">Productos web, automatizaciones e IA aplicada, desde el problema hasta la implementación.</p>
         <div class="card-signature">
           <i></i>
           <span>{hostname}</span>
         </div>
       </div>
-      <div class="card-map"><HeroSystemVisual {...homeConfig.heroSystemVisual} /></div>
+      <div class="card-map">
+        <p class="project-label">De la idea al producto</p>
+        <ConversationPreview animated={false} compact />
+        <p class="project-names">CRM e IA · Puntos y beneficios · Hanexa Rural</p>
+      </div>
     </main>
   </body>
 </html>
@@ -115,9 +118,9 @@ const hostname = new URL(seoConfig.site.url).hostname;
   }
 
   .card-copy h1 {
-    max-width: 9.8ch;
+    max-width: 17ch;
     margin: 0;
-    font: 400 68px/.98 var(--font-display);
+    font: 400 55px/1.04 var(--font-display);
     letter-spacing: -.035em;
   }
 
@@ -127,9 +130,9 @@ const hostname = new URL(seoConfig.site.url).hostname;
 
   .card-summary {
     max-width: 525px;
-    margin: 28px 0 0;
+    margin: 22px 0 0;
     color: var(--ink-soft);
-    font-size: 20px;
+    font-size: 19px;
     line-height: 1.48;
   }
 
@@ -151,10 +154,8 @@ const hostname = new URL(seoConfig.site.url).hostname;
     background: var(--accent);
   }
 
-  .card-map .knowledge-map {
-    width: 100%;
-    min-height: 482px;
-  }
+  .project-label { margin: 0 0 12px; color: var(--accent-ink); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+  .project-names { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line-strong); color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
 
   @media (prefers-color-scheme: dark) {
     body {

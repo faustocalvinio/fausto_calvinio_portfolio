@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  visuals: CollectionEntry<'projects'>['data']['visuals'];
+}
+
+const images = Astro.props.visuals.filter((visual) => visual.type === 'image' && visual.src && visual.alt);
+---
+
+{images.length > 0 && (
+  <section class:list={["project-gallery", { single: images.length === 1 }]} aria-label="Capturas del proyecto">
+    {images.map((visual) => (
+      <figure>
+        <a class="capture-link" href={visual.src} target="_blank" rel="noreferrer" aria-label={'Ampliar captura: ' + visual.alt + ' (abre otra pestaña)'}>
+          <img src={visual.src} alt={visual.alt} width={visual.width} height={visual.height} loading="lazy" decoding="async" />
+        </a>
+        <figcaption>
+          <p>{visual.caption}</p>
+          <a href={visual.src} target="_blank" rel="noreferrer">Ampliar captura <span aria-hidden="true">↗</span><span class="capture-sr">: {visual.alt} (abre otra pestaña)</span></a>
+        </figcaption>
+      </figure>
+    ))}
+  </section>
+)}
+
+<style>
+  .project-gallery.single { grid-template-columns: minmax(0, 1fr); max-width: 72ch; margin-inline: auto; }
+  .project-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-block: 3rem; }
+  figure { min-width: 0; margin: 0; }
+  .capture-link { display: flex; align-items: center; justify-content: center; height: 30rem; padding: 1rem; background: var(--bg-alt); border: 1px solid var(--line); transition: border-color .2s ease; }
+  .capture-link:hover, .capture-link:focus-visible { border-color: var(--accent); }
+  img { width: 100%; height: 100%; object-fit: contain; }
+  figcaption { margin-top: .8rem; color: var(--muted); font-size: .85rem; }
+  figcaption p { margin: 0 0 .5rem; }
+  figcaption a { color: var(--accent-ink); text-underline-offset: .25em; }
+  .capture-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-width: 720px) { .project-gallery { grid-template-columns: 1fr; } .capture-link { height: auto; min-height: 12rem; } img { width: auto; height: auto; max-height: 36rem; } }
+  @media (prefers-reduced-motion: reduce) { .capture-link { transition: none; } }
+</style>

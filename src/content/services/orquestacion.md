@@ -6,4 +6,5 @@ description: Diseño equipos de agentes con responsabilidades, herramientas y en
 deliverables: [Arquitectura y roles definidos, Agentes y herramientas conectadas, Documentación del flujo y sus límites]
 technologies: [CrewAI, Python, LLMs, MCP]
 featured: true
+relatedProjects: [plataforma-multi-rubro-agentes]
 ---

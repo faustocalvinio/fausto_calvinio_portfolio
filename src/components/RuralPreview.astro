@@ -1,0 +1,1245 @@
+---
+import Icon from './PreviewIcon.astro';
+interface Props { idPrefix: string; }
+const { idPrefix } = Astro.props;
+const metrics = [
+  {
+    label: 'Superficie en producción',
+    value: '1.260',
+    unit: 'ha',
+    caption: '6 lotes · 3 campos',
+    icon: 'sprout',
+    tone: 'green',
+  },
+  {
+    label: 'Costos de campaña',
+    value: '346.190',
+    unit: 'USD',
+    caption: 'USD 274,75 por hectárea',
+    icon: 'chart',
+    tone: 'green',
+  },
+  {
+    label: 'Cereal disponible',
+    value: '2.979,03',
+    unit: 't',
+    caption: 'Campo, tránsito y cooperativas',
+    icon: 'wheat',
+    tone: 'gold',
+  },
+  {
+    label: 'Vencimientos a atender',
+    value: '4',
+    unit: '',
+    caption: '1 vencido · próximos 30 días',
+    icon: 'calendar',
+    tone: 'orange',
+  },
+];
+const crops = [
+  { name: 'Maíz', area: 280, color: '#6f8954' },
+  { name: 'Soja', area: 450, color: '#aec38b' },
+  { name: 'Trigo', area: 150, color: '#d1c68a' },
+  { name: 'Sorgo', area: 180, color: '#8ba492' },
+  { name: 'Algodón', area: 200, color: '#ded9bc' },
+];
+const fields = [
+  { name: 'Las Acacias', caption: '3 lotes · Propia', area: '640' },
+  { name: 'El Ombú', caption: '2 lotes · Arrendada', area: '420' },
+  { name: 'La Esperanza', caption: '1 lote · Propia', area: '200' },
+];
+const agenda = [
+  {
+    day: '04',
+    title: 'Compra · Glifosato 48%',
+    amount: 'A pagar · USD 2.200',
+    status: 'Vencido',
+  },
+  {
+    day: '13',
+    title: 'Cuota 2 · El Ombú',
+    amount: 'A pagar · USD 6.000',
+    status: 'Pendiente',
+  },
+  {
+    day: '18',
+    title: 'Servicio de siembra',
+    amount: 'A pagar · USD 1.850',
+    status: 'Pendiente',
+  },
+  {
+    day: '25',
+    title: 'Liquidación · Maíz',
+    amount: 'A cobrar · ARS 1.400.000',
+    status: 'Pendiente',
+  },
+];
+const prompts = [
+  {
+    label: 'Cereal disponible',
+    question: '¿Cuánto cereal tenemos disponible?',
+    answer:
+      'Hay 2.979,03 t de cereal disponibles entre campo, tránsito y cooperativas. El resumen reúne las existencias de la campaña 2026/27.',
+  },
+  {
+    label: 'Vencimientos',
+    question: '¿Qué pagos tenemos que atender?',
+    answer:
+      'Hay 4 vencimientos a atender en los próximos 30 días, incluido 1 con saldo vencido. La cuota de El Ombú vence el 13 de noviembre: USD 6.000.',
+  },
+  {
+    label: 'Resumen de la empresa',
+    question: '¿Cómo viene nuestra campaña?',
+    answer:
+      'La campaña 2026/27 tiene 1.260 ha en producción, distribuidas en 6 lotes y 3 campos. Los costos registrados suman USD 346.190, equivalentes a USD 274,75 por hectárea.',
+  },
+];
+---
+
+<div
+  class="rural-preview"
+  id={idPrefix}
+  data-rural-preview
+  role="region"
+  aria-label="Vista previa de Hanexa Rural con datos ficticios"
+>
+  <div class="rural-app">
+    <aside class="rural-sidebar" aria-label="Menú de la vista previa">
+      <div class="rural-brand">
+        <Icon name="sprout" size={30} />
+        <div>
+          hanexa<small>RURAL</small>
+        </div>
+      </div>
+      <div class="rural-company">
+        <Icon name="sprout" size={18} />
+        <div>
+          <strong>Establecimiento Demo</strong>
+          <small>Junín · Buenos Aires</small>
+        </div>
+      </div>
+      <span class="rural-nav-label">ESPACIO DE TRABAJO</span>
+      <div
+        class="rural-view-tabs"
+        role="tablist"
+        aria-label="Pantallas de Hanexa Rural"
+        aria-orientation="vertical"
+      >
+        <button
+          type="button"
+          id={idPrefix + "-rural-home-tab"}
+          role="tab"
+          aria-label="Inicio"
+          aria-selected="true"
+          aria-controls={idPrefix + "-rural-home-panel"}
+          data-rural-tab="Vista general"
+          title="Inicio"
+        >
+          <Icon name="layers" size={17} />
+          <span>Inicio</span>
+          <i></i>
+        </button>
+        <div class="rural-nav-item">
+          <Icon name="calendar" size={17} />
+          <span>Calendario</span>
+        </div>
+        <button
+          type="button"
+          id={idPrefix + "-rural-assistant-tab"}
+          role="tab"
+          aria-label="Asistente"
+          aria-selected="false"
+          aria-controls={idPrefix + "-rural-assistant-panel"}
+          data-rural-tab="Asistente"
+          tabindex="-1"
+          title="Asistente"
+        >
+          <Icon name="chat" size={17} />
+          <span>Asistente</span>
+          <i></i>
+        </button>
+      </div>
+      <div class="rural-nav-item">
+        <Icon name="sprout" size={17} />
+        <span>Producción agraria</span>
+      </div>
+      <div class="rural-nav-item">
+        <Icon name="pin" size={17} />
+        <span>Arrendamiento rural</span>
+      </div>
+      <div class="rural-nav-item">
+        <Icon name="store" size={17} />
+        <span>Stock de cereal</span>
+      </div>
+      <div class="rural-nav-divider"></div>
+      <div class="rural-nav-item">
+        <Icon name="people" size={17} />
+        <span>Personas y empresas</span>
+      </div>
+      <div class="rural-nav-item">
+        <Icon name="briefcase" size={17} />
+        <span>Compras y pagos</span>
+      </div>
+      <div class="rural-nav-item">
+        <Icon name="chart" size={17} />
+        <span>Reportes</span>
+      </div>
+      <div class="rural-profile">
+        <b>MP</b>
+        <div>
+          <strong>Mi perfil</strong>
+          <small>Administración</small>
+        </div>
+      </div>
+    </aside>
+    <div class="rural-workspace">
+      <div class="rural-topbar">
+        <span>
+          <Icon name="store" size={13} />
+          <i>/</i>
+          <span data-rural-view-title>Vista general</span>
+        </span>
+        <span class="rural-campaign">
+          Campaña <strong>2026/27 ⌄</strong>
+        </span>
+      </div>
+      <div
+        id={idPrefix + "-rural-home-panel"}
+        role="tabpanel"
+        aria-labelledby={idPrefix + "-rural-home-tab"}
+        class="rural-content"
+      >
+        <div class="rural-heading">
+          <div>
+            <small>
+              <i></i> PANORAMA DEL ESTABLECIMIENTO
+            </small>
+            <h4>Tu campo, en perspectiva.</h4>
+            <p>¿Qué está pasando en tu producción, tus tierras y tu cereal?</p>
+          </div>
+          <span class="rural-new-campaign">
+            <Icon name="plus" size={13} /> Nueva campaña
+          </span>
+        </div>
+        <div class="rural-metrics">
+          {metrics.map((metric) => (
+            <div class="rural-metric">
+              <div class="rural-metric-label">
+                <span>{metric.label}</span>
+                <span class:list={['rural-metric-icon', metric.tone]}>
+                  <Icon name={metric.icon} size={17} />
+                </span>
+              </div>
+              <strong>
+                {metric.value}
+                <small>{metric.unit}</small>
+              </strong>
+              <p>{metric.caption}</p>
+            </div>
+          ))}
+        </div>
+        <div class="rural-panels">
+          <section
+            class="rural-card rural-production"
+            aria-label="La campaña en perspectiva"
+          >
+            <div class="rural-card-heading">
+              <h5>La campaña en perspectiva</h5>
+              <p>Superficie por cultivo y distribución de tus campos</p>
+            </div>
+            <div class="rural-distribution">
+              <strong>
+                1.260 <small>ha cultivadas</small>
+              </strong>
+              <div
+                class="rural-stacked-bar"
+                role="img"
+                aria-label="Maíz 280 ha, soja 450 ha, trigo 150 ha, sorgo 180 ha y algodón 200 ha"
+              >
+                {crops.map((crop) => (
+                  <span
+                    style={`width: ${(crop.area / 1260) * 100}%; background: ${crop.color}`}
+                    title={`${crop.name}: ${crop.area} ha`}
+                  ></span>
+                ))}
+              </div>
+              <div class="rural-crop-legend">
+                {crops.map((crop) => (
+                  <div>
+                    <span>
+                      <i style={`background: ${crop.color}`}></i>
+                      {crop.name}
+                    </span>
+                    <strong>
+                      {crop.area} <small>ha</small>
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div class="rural-fields">
+              {fields.map((field) => (
+                <div>
+                  <span class="rural-field-icon">
+                    <Icon name="pin" size={17} />
+                  </span>
+                  <div>
+                    <strong>{field.name}</strong>
+                    <small>{field.caption}</small>
+                  </div>
+                  <b>
+                    {field.area}
+                    <small>ha cultivadas</small>
+                  </b>
+                </div>
+              ))}
+            </div>
+            <p class="rural-card-foot">
+              <Icon name="layers" size={12} /> Costos y producción según los
+              registros de campaña.
+            </p>
+          </section>
+          <section
+            class="rural-card rural-agenda"
+            aria-label="Vencimientos de ejemplo"
+          >
+            <div class="rural-card-heading">
+              <h5>
+                En agenda <span>4</span>
+              </h5>
+              <p>Vencidos y próximos 30 días</p>
+            </div>
+            <div class="rural-agenda-list">
+              {agenda.map((item) => (
+                <div class="rural-agenda-item">
+                  <span
+                    class:list={[
+                      'rural-date',
+                      { overdue: item.status === 'Vencido' },
+                    ]}
+                  >
+                    <small>NOV</small>
+                    <b>{item.day}</b>
+                  </span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <small>{item.amount}</small>
+                    <span
+                      class:list={[
+                        'rural-badge',
+                        { overdue: item.status === 'Vencido' },
+                      ]}
+                    >
+                      ● {item.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+      <div
+        id={idPrefix + "-rural-assistant-panel"}
+        role="tabpanel"
+        aria-labelledby={idPrefix + "-rural-assistant-tab"}
+        class="rural-content rural-assistant"
+        hidden
+      >
+        <div class="rural-heading">
+          <div>
+            <small>ASISTENTE DE HANEXA RURAL</small>
+            <h4>Preguntá por tu gestión.</h4>
+            <p>Consultá tu producción, el stock y los próximos vencimientos.</p>
+          </div>
+        </div>
+        <div class="rural-assistant-card">
+          <header>
+            <span class="rural-assistant-icon">
+              <Icon name="atom" size={20} />
+            </span>
+            <div>
+              <strong>Resumen de tu establecimiento</strong>
+              <small>Consultas sobre los registros del ERP</small>
+            </div>
+          </header>
+          <div
+            class="rural-chat-messages"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <div class="rural-question">
+              <small>VOS</small>
+              <p data-rural-question>{prompts[0].question}</p>
+            </div>
+            <div class="rural-answer">
+              <small>HANEXA</small>
+              <p data-rural-answer>{prompts[0].answer}</p>
+              <span>Datos de ejemplo · campaña 2026/27</span>
+            </div>
+          </div>
+          <div class="rural-prompts" aria-label="Consultas de ejemplo">
+            {prompts.map((prompt, index) => (
+              <button
+                type="button"
+                data-rural-prompt
+                data-question={prompt.question}
+                data-answer={prompt.answer}
+                aria-pressed={index === 0 ? 'true' : 'false'}
+              >
+                {prompt.label}
+              </button>
+            ))}
+          </div>
+          <p class="rural-assistant-notice">
+            Seleccioná una consulta para explorar esta vista previa.
+          </p>
+        </div>
+      </div>
+      <div class="rural-footer">
+        <span>
+          <Icon name="sprout" size={12} /> Gestión con los pies en la tierra.
+        </span>
+        <span>VISTA PREVIA · DATOS FICTICIOS</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>('[data-rural-preview]')
+    .forEach((preview) => {
+      const tabs = [
+        ...preview.querySelectorAll<HTMLButtonElement>('[data-rural-tab]'),
+      ];
+      function activate(tab: HTMLButtonElement) {
+        tabs.forEach((button) => {
+          const selected = button === tab;
+          button.setAttribute('aria-selected', String(selected));
+          button.tabIndex = selected ? 0 : -1;
+          const panel = preview.querySelector<HTMLElement>(
+            `#${button.getAttribute('aria-controls')}`,
+          );
+          if (panel) panel.hidden = !selected;
+        });
+        const title = preview.querySelector('[data-rural-view-title]');
+        if (title) title.textContent = tab.dataset.ruralTab ?? '';
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activate(tab));
+        tab.addEventListener('keydown', (event) => {
+          let next: number | undefined;
+          if (event.key === 'ArrowDown' || event.key === 'ArrowRight')
+            next = (index + 1) % tabs.length;
+          if (event.key === 'ArrowUp' || event.key === 'ArrowLeft')
+            next = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === 'Home') next = 0;
+          if (event.key === 'End') next = tabs.length - 1;
+          if (next !== undefined) {
+            event.preventDefault();
+            activate(tabs[next]);
+            tabs[next].focus();
+          }
+        });
+      });
+      preview
+        .querySelectorAll<HTMLButtonElement>('[data-rural-prompt]')
+        .forEach((button) => {
+          button.addEventListener('click', () => {
+            const question = preview.querySelector('[data-rural-question]');
+            const answer = preview.querySelector('[data-rural-answer]');
+            if (question) question.textContent = button.dataset.question ?? '';
+            if (answer) answer.textContent = button.dataset.answer ?? '';
+            preview
+              .querySelectorAll('[data-rural-prompt]')
+              .forEach((prompt) =>
+                prompt.setAttribute('aria-pressed', String(prompt === button)),
+              );
+          });
+        });
+    });
+</script>
+
+<style>
+  .rural-preview {
+    scroll-margin-top: 6rem;
+    --preview-warning-bg: #fbf3e2;
+    --preview-warning-ink: #7c511a;
+    container-type: inline-size;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--bg-alt);
+    color: var(--ink);
+    color-scheme: light dark;
+    box-shadow: 0 18px 60px color-mix(in srgb, var(--ink) 7%, transparent);
+    font:
+      12px/1.5 'Segoe UI',
+      Arial,
+      sans-serif;
+  }
+  .rural-preview :is(h4, h5, h6, p) { margin: 0; }
+  .rural-preview button { cursor: pointer; }
+  .rural-preview [hidden] { display: none !important; }
+  .rural-preview h4,
+  .rural-preview h5 {
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .rural-app {
+    display: grid;
+    grid-template-columns: 155px minmax(0, 1fr);
+    min-height: 540px;
+  }
+  .rural-sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 10px 12px;
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+  .rural-brand {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    color: var(--bg);
+    margin: 0 8px 24px;
+  }
+  .rural-brand > div {
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 750;
+    letter-spacing: -1px;
+  }
+  .rural-brand small {
+    display: block;
+    margin-top: 6px;
+    font-size: 7px;
+    color: color-mix(in srgb, var(--on-ink) 80%, var(--ink));
+    letter-spacing: 3px;
+  }
+  .rural-company {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 7px;
+    background: color-mix(in srgb, var(--ink) 86%, var(--accent));
+    margin-bottom: 24px;
+  }
+  .rural-company > :global(svg) {
+    color: var(--on-ink);
+    flex-shrink: 0;
+  }
+  .rural-company strong {
+    font-size: 9px;
+    color: var(--on-ink);
+  }
+  .rural-company small {
+    display: block;
+    color: color-mix(in srgb, var(--on-ink) 80%, var(--ink));
+    font-size: 8px;
+  }
+  .rural-nav-label {
+    font-size: 7px;
+    letter-spacing: 1px;
+    color: color-mix(in srgb, var(--on-ink) 80%, var(--ink));
+    margin: 0 7px 12px;
+  }
+  .rural-nav-item,
+  .rural-view-tabs button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 8px;
+    font-size: 10px;
+    color: var(--on-ink);
+  }
+  .rural-view-tabs button {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    font-size: 10px;
+  }
+  .rural-view-tabs button[aria-selected='true'] {
+    background: color-mix(in srgb, var(--ink) 86%, var(--accent));
+    color: var(--on-ink);
+    font-weight: 650;
+  }
+  .rural-view-tabs i {
+    display: none;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--on-ink);
+    margin-left: auto;
+  }
+  .rural-view-tabs [aria-selected='true'] i {
+    display: block;
+  }
+  .rural-view-tabs button:focus-visible {
+    outline: 2px solid var(--on-ink);
+    outline-offset: 2px;
+  }
+  .rural-nav-divider {
+    border-top: 1px solid var(--line);
+    margin: 16px 8px;
+  }
+  .rural-profile {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    padding: 14px 4px 0;
+    margin-top: auto;
+  }
+  .rural-profile > b {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    background: var(--on-ink);
+    color: color-mix(in srgb, var(--ink) 86%, var(--accent));
+    border-radius: 50%;
+    font-size: 9px;
+  }
+  .rural-profile strong {
+    font-size: 10px;
+    color: var(--ink);
+  }
+  .rural-profile small {
+    display: block;
+    font-size: 8px;
+  }
+  .rural-workspace {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .rural-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 20px;
+    min-height: 50px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    font-size: 10px;
+  }
+  .rural-topbar > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .rural-topbar :global(svg),
+  .rural-topbar i {
+    color: var(--muted);
+    font-style: normal;
+  }
+  .rural-campaign {
+    color: var(--muted);
+    font-size: 9px;
+  }
+  .rural-campaign strong {
+    display: inline-block;
+    padding: 5px 8px;
+    margin-left: 6px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .rural-content {
+    padding: 24px 20px 16px;
+  }
+  .rural-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .rural-heading small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 7px;
+    letter-spacing: 0.1em;
+  }
+  .rural-heading small i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-ink);
+  }
+  .rural-heading h4 {
+    margin: 6px 0;
+    font-size: clamp(19px, 2.1cqi, 26px);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.6px;
+  }
+  .rural-heading p {
+    font-size: 10px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .rural-new-campaign {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    color: var(--bg);
+    background: var(--accent);
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .rural-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .rural-metric,
+  .rural-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .rural-metric {
+    padding: 12px;
+    min-width: 0;
+  }
+  .rural-metric-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .rural-metric-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 27px;
+    height: 27px;
+    border-radius: 7px;
+    background: var(--accent-tint);
+    color: var(--accent-ink);
+  }
+  .rural-metric-icon.gold {
+    background: var(--preview-warning-bg);
+    color: var(--preview-warning-ink);
+  }
+  .rural-metric-icon.orange {
+    background: var(--preview-warning-bg);
+    color: var(--preview-warning-ink);
+  }
+  .rural-metric > strong {
+    display: block;
+    white-space: nowrap;
+    font-size: clamp(18px, 2.2cqi, 28px);
+    color: var(--ink);
+    font-weight: 650;
+    letter-spacing: -0.8px;
+    margin: 14px 0 10px;
+    line-height: 1;
+  }
+  .rural-metric > strong small {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--muted);
+    margin-left: 5px;
+  }
+  .rural-metric > p {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    font-size: 8px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .rural-panels {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 14px;
+  }
+  .rural-card {
+    overflow: hidden;
+  }
+  .rural-card-heading {
+    padding: 16px 16px 12px;
+  }
+  .rural-card-heading h5 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .rural-card-heading p {
+    color: var(--muted);
+    font-size: 9px;
+    margin: 4px 0 0;
+  }
+  .rural-card-heading h5 > span {
+    float: right;
+    background: var(--accent-tint);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .rural-distribution {
+    padding: 0 16px 14px;
+  }
+  .rural-distribution > strong {
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  .rural-distribution > strong small {
+    font-size: 9px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .rural-stacked-bar {
+    display: flex;
+    height: 22px;
+    gap: 2px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .rural-crop-legend {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .rural-crop-legend > div > span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 8px;
+    color: var(--muted);
+  }
+  .rural-crop-legend i {
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+  }
+  .rural-crop-legend strong {
+    display: block;
+    font-weight: 550;
+    font-size: 10px;
+    margin-top: 4px;
+    color: var(--accent-ink);
+  }
+  .rural-crop-legend small {
+    font-size: 8px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .rural-fields {
+    padding: 0 16px;
+  }
+  .rural-fields > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+  .rural-field-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent-ink);
+    background: var(--bg-alt);
+  }
+  .rural-fields strong {
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .rural-fields small {
+    display: block;
+    font-size: 8px;
+    color: var(--muted);
+  }
+  .rural-fields b {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 550;
+    text-align: right;
+    color: var(--accent-ink);
+  }
+  .rural-fields b small {
+    font-weight: 400;
+    font-size: 7px;
+  }
+  .rural-card-foot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 8px;
+    background: var(--bg);
+    margin: 0;
+  }
+  .rural-agenda-list {
+    padding: 0 14px;
+  }
+  .rural-agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rural-agenda-item:last-child {
+    border-bottom: 0;
+  }
+  .rural-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    background: var(--bg-alt);
+    border-radius: 5px;
+    min-width: 34px;
+  }
+  .rural-date small {
+    font-size: 7px;
+    color: var(--muted);
+  }
+  .rural-date b {
+    font-size: 16px;
+    line-height: 1.2;
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .rural-date.overdue {
+    border-color: var(--preview-warning-ink);
+    background: var(--preview-warning-bg);
+  }
+  .rural-date.overdue b {
+    color: var(--preview-warning-ink);
+  }
+  .rural-agenda-item > div > strong {
+    display: block;
+    font-weight: 550;
+    font-size: 10px;
+  }
+  .rural-agenda-item > div > small {
+    display: block;
+    font-size: 8px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .rural-badge {
+    display: inline-block;
+    font-size: 7px;
+    padding: 2px 5px;
+    margin-top: 5px;
+    border-radius: 4px;
+    color: var(--preview-warning-ink);
+    background: var(--preview-warning-bg);
+  }
+  .rural-badge.overdue {
+    color: var(--preview-warning-ink);
+    background: var(--preview-warning-bg);
+  }
+  .rural-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 20px;
+    margin-top: auto;
+    font-size: 8px;
+    color: var(--muted);
+  }
+  .rural-footer > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .rural-footer > span:last-child {
+    font-size: 7px;
+    letter-spacing: 0.06em;
+  }
+  .rural-assistant-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .rural-assistant-card header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rural-assistant-icon {
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    padding: 9px;
+    color: var(--bg);
+    background: var(--accent);
+  }
+  .rural-assistant-card header strong {
+    font-size: 12px;
+  }
+  .rural-assistant-card header small {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .rural-chat-messages {
+    min-height: 230px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 24px 18px;
+  }
+  .rural-chat-messages small {
+    font-size: 7px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .rural-question {
+    align-self: end;
+    max-width: 85%;
+  }
+  .rural-question p {
+    margin: 5px 0 0;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 12px 0 12px 12px;
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+  .rural-answer {
+    max-width: 90%;
+  }
+  .rural-answer p {
+    margin: 5px 0 8px;
+    background: var(--accent-tint);
+    padding: 14px;
+    border-radius: 0 12px 12px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .rural-answer > span {
+    color: var(--muted);
+    font-size: 8px;
+  }
+  .rural-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 16px;
+  }
+  .rural-prompts button {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--accent-ink);
+    border-radius: 20px;
+    padding: 8px 10px;
+    min-height: 40px;
+    font: inherit;
+    font-size: 10px;
+  }
+  .rural-prompts button[aria-pressed='true'] {
+    background: var(--accent-tint);
+    border-color: var(--accent-ink);
+  }
+  .rural-prompts button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .rural-assistant-notice {
+    border-top: 1px solid var(--line);
+    padding: 12px 16px;
+    font-size: 9px;
+    color: var(--muted);
+    margin: 0;
+  }
+  @container (max-width: 800px) {
+    .rural-app {
+      grid-template-columns: 48px minmax(0, 1fr);
+    }
+    .rural-sidebar {
+      padding: 18px 5px 10px;
+    }
+    .rural-brand {
+      margin: 0 0 22px;
+      justify-content: center;
+    }
+    .rural-brand > div,
+    .rural-company,
+    .rural-nav-label,
+    .rural-nav-item > span,
+    .rural-view-tabs button > span,
+    .rural-view-tabs button > i,
+    .rural-profile > div {
+      display: none;
+    }
+    .rural-nav-item,
+    .rural-view-tabs button {
+      justify-content: center;
+      padding: 12px 5px;
+    }
+    .rural-view-tabs [aria-selected='true'] i {
+      display: none;
+    }
+    .rural-nav-divider {
+      margin: 12px 3px;
+    }
+    .rural-profile {
+      justify-content: center;
+      padding-inline: 0;
+    }
+    .rural-content {
+      padding: 18px 14px 12px;
+    }
+    .rural-topbar {
+      padding: 10px 14px;
+    }
+    .rural-new-campaign {
+      display: none;
+    }
+    .rural-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .rural-panels {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rural-agenda-item:nth-child(n + 3) {
+      display: none;
+    }
+    .rural-heading h4 {
+      font-size: 21px;
+    }
+    .rural-footer {
+      padding: 12px 14px;
+    }
+  }
+  @container (max-width: 400px) {
+    .rural-app {
+      grid-template-columns: 38px minmax(0, 1fr);
+    }
+    .rural-brand img {
+      width: 26px;
+      height: 26px;
+    }
+    .rural-content {
+      padding: 16px 10px 10px;
+    }
+    .rural-topbar {
+      padding: 10px;
+      gap: 5px;
+      font-size: 9px;
+    }
+    .rural-campaign {
+      font-size: 0;
+    }
+    .rural-campaign strong {
+      font-size: 9px;
+      margin-left: 0;
+      padding: 4px 5px;
+    }
+    .rural-heading h4 {
+      font-size: 20px;
+    }
+    .rural-heading p {
+      font-size: 9px;
+    }
+    .rural-metrics {
+      gap: 6px;
+    }
+    .rural-metric {
+      padding: 9px;
+    }
+    .rural-metric-label {
+      font-size: 9px;
+    }
+    .rural-metric-icon {
+      display: none;
+    }
+    .rural-metric > strong {
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+    .rural-metric > strong small {
+      font-size: 8px;
+      margin-left: 3px;
+    }
+    .rural-card-heading {
+      padding: 14px 12px 12px;
+    }
+    .rural-distribution {
+      padding-inline: 12px;
+    }
+    .rural-crop-legend {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .rural-fields {
+      padding-inline: 12px;
+    }
+    .rural-card-foot {
+      padding-inline: 12px;
+    }
+    .rural-chat-messages {
+      padding: 16px 12px;
+    }
+    .rural-question p,
+    .rural-answer p {
+      font-size: 11px;
+    }
+  }
+  @container (max-width: 300px) {
+    .rural-metric > strong {
+      font-size: 18px;
+      white-space: normal;
+    }
+    .rural-metric > strong small {
+      display: block;
+      margin: 5px 0 0;
+      min-height: 10px;
+    }
+  }
+  .rural-sidebar { background: var(--bg-alt); color: var(--ink); }
+  .rural-brand, .rural-company strong { color: var(--ink); }
+  .rural-brand small, .rural-company small, .rural-nav-label { color: var(--muted); }
+  .rural-company { background: var(--accent-tint); }
+  .rural-company > :global(svg) { color: var(--accent-ink); }
+  .rural-nav-item, .rural-view-tabs button { color: var(--ink-soft); }
+  .rural-view-tabs button[aria-selected='true'] { background: var(--accent-tint); color: var(--accent-ink); }
+  .rural-nav-divider { background: var(--line); }
+  .rural-profile { color: var(--ink); }
+  @media (prefers-color-scheme: dark) { .rural-preview { --preview-warning-bg: #322718; --preview-warning-ink: #edc789; } }
+  @media (prefers-reduced-motion: reduce) { .rural-preview * { animation: none; transition: none; } }
+</style>
