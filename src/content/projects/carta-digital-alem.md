@@ -8,6 +8,7 @@ solution: Una carta pública organizada por categorías y un panel de administra
 status: Publicado, con carta pública y administración propia.
 role: Desarrollo integral de la carta, el panel de administración, la persistencia y la implementación en VPS.
 featured: true
+hidden: true
 year: '2026'
 stack: [Astro, TypeScript, Node.js, PostgreSQL, Docker, Nginx]
 links:

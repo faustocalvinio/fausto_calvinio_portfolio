@@ -29,7 +29,7 @@ export const selectedWorksConfig: SelectedWorksConfig = {
     slugs: [
       'hanexa-crm',
       'hanexa-puntos',
-      'carta-digital-alem',
+      'hanexa-rural',
       'plataforma-multi-rubro-agentes',
     ],
   },

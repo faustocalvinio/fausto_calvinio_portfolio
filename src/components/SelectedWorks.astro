@@ -1,5 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
+import CrmPreview from './CrmPreview.astro';
+import RuralPreview from './RuralPreview.astro';
 import { selectedWorksConfig as config } from '../config/selected-works';
 
 const allProjects = await getCollection('projects');
@@ -61,12 +63,13 @@ const otherProjects = publicProjects
                 <div><dt>Problema</dt><dd>{project.data.problem}</dd></div>
                 <div><dt>Solución</dt><dd>{project.data.solution}</dd></div>
               </dl>
+              {project.data.slug === 'hanexa-puntos' && <a class="points-demo-link" href={project.data.links.demo} target="_blank" rel="noopener noreferrer">Probar demo <span aria-hidden="true">↗</span><span class="link-note"> · abre otra pestaña</span></a>}
               {project.data.role && <p class="case-role"><strong>Mi aporte</strong> {project.data.role}</p>}
-              <ul class="tags">
+              {project.data.stack.length > 0 && <ul class="tags">
                 {project.data.stack
                   .slice(0, config.stackLimit)
                   .map((technology) => <li>{technology}</li>)}
-              </ul>
+              </ul>}
               <a
                 class="project-case-link"
                 href={`/proyectos/${project.data.slug}/`}
@@ -75,6 +78,8 @@ const otherProjects = publicProjects
                 <i aria-hidden="true">→</i>
               </a>
             </div>
+            {project.data.slug === 'hanexa-crm' && <div class="case-visual"><CrmPreview idPrefix="work-crm" /></div>}
+            {project.data.slug === 'hanexa-rural' && <div class="case-visual"><RuralPreview idPrefix="work-rural" /></div>}
           </article>
           );
         })
@@ -100,6 +105,10 @@ const otherProjects = publicProjects
 </section>
 
 <style>
+  .case-visual { grid-column: 1 / -1; min-width: 0; }
+  .points-demo-link { display: inline-block; margin: 0 0 1.5rem; color: var(--accent-ink); text-underline-offset: .3em; }
+  .link-note { color: var(--muted); font-size: .75rem; }
+
   .case-preview { display: block; margin-top: 1.5rem; border: 1px solid var(--line-strong); background: var(--bg); }
   .case-preview img { width: 100%; height: 15rem; padding: .75rem; object-fit: contain; }
   .case-role { font-size: .9rem; margin: 0 0 1.5rem; }

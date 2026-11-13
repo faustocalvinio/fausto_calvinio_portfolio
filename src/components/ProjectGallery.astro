@@ -9,7 +9,7 @@ const images = Astro.props.visuals.filter((visual) => visual.type === 'image' &&
 ---
 
 {images.length > 0 && (
-  <section class="project-gallery" aria-label="Capturas del proyecto">
+  <section class:list={["project-gallery", { single: images.length === 1 }]} aria-label="Capturas del proyecto">
     {images.map((visual) => (
       <figure>
         <a class="capture-link" href={visual.src} target="_blank" rel="noreferrer" aria-label={'Ampliar captura: ' + visual.alt + ' (abre otra pestaña)'}>
@@ -25,6 +25,7 @@ const images = Astro.props.visuals.filter((visual) => visual.type === 'image' &&
 )}
 
 <style>
+  .project-gallery.single { grid-template-columns: minmax(0, 1fr); max-width: 72ch; margin-inline: auto; }
   .project-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-block: 3rem; }
   figure { min-width: 0; margin: 0; }
   .capture-link { display: flex; align-items: center; justify-content: center; height: 30rem; padding: 1rem; background: var(--bg-alt); border: 1px solid var(--line); transition: border-color .2s ease; }

@@ -4,6 +4,7 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import HeroSystemVisual from '../components/HeroSystemVisual.astro';
 import SelectedWorks from '../components/SelectedWorks.astro';
+import ConversationPreview from '../components/ConversationPreview.astro';
 import TechnologyDna from '../components/TechnologyDna.astro';
 import { homeConfig } from '../config/home';
 import { siteConfig } from '../config/site';
@@ -17,7 +18,6 @@ const articles = (await getCollection('articles'))
 const services = await getCollection('services');
 const projects = (await getCollection('projects')).filter((project) => !project.data.hidden);
 const mainProject = projects.find((project) => project.data.slug === 'hanexa-crm');
-const conversation = mainProject?.data.visuals.find((visual) => visual.src?.includes('/conversacion.'));
 const experience = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
 const emailHref = 'mailto:' + seoConfig.author.email;
 const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig.contact.projectEmailSubject);
@@ -49,14 +49,9 @@ const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig
             <p class="lede">De una consulta a una conversación que el equipo puede continuar.</p>
             <p>Una bandeja para atender, un bot conectado al catálogo y un pipeline para dar seguimiento. Construí el producto desde los flujos de atención hasta la interfaz, los datos y las integraciones.</p>
             <p class="main-case-status">{mainProject.data.status}</p>
-            <a class="case-link" href="/proyectos/hanexa-crm/">Ver el caso y las capturas <span aria-hidden="true">→</span></a>
+            <a class="case-link" href="/proyectos/hanexa-crm/">Explorar el caso <span aria-hidden="true">→</span></a>
           </div>
-          {conversation && <figure class="main-case-figure">
-            <a href="/proyectos/hanexa-crm/" aria-label="Explorar el caso Hanexa CRM">
-              <img src={conversation.src} alt={conversation.alt} width={conversation.width} height={conversation.height} loading="lazy" decoding="async" />
-            </a>
-            <figcaption>Interfaz real · nombres y marca de ejemplo. El bot responde y pregunta para entender la necesidad.</figcaption>
-          </figure>}
+          <ConversationPreview />
         </div>
         <ol class="product-journey" aria-label="Recorrido de atención en Hanexa">
           <li><span>Entrada</span><strong>Llega una consulta</strong><p>La conversación y el contacto quedan en el mismo sistema.</p></li>
@@ -124,7 +119,7 @@ const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig
         <div class="about-copy">
           <p class="eyebrow">Sobre mí</p><h2>Del problema a un producto que se puede usar</h2>
           <p class="lede">Soy Fausto Calviño. Desarrollo productos web, integraciones y automatizaciones. Me interesa trabajar en el recorrido completo: entender qué necesita una persona o un equipo, definir cómo resolverlo y construir el sistema que lo hace posible.</p>
-          <p class="lede">Empecé con sitios autogestionables y e-commerce. Hoy esa experiencia convive con productos como Hanexa CRM, puntos y beneficios y Carta Digital ALEM, además de mi laboratorio de agentes de IA.</p>
+          <p class="lede">Empecé con sitios autogestionables y e-commerce. Hoy esa experiencia convive con productos como Hanexa CRM, puntos y beneficios y Hanexa Rural, además de mi laboratorio de agentes de IA.</p>
           <p class="lede">Desde mediados de 2021 aprendo de forma autodidacta. Mi base está en React, Next.js, Node.js y bases de datos; la extiendo con Python, n8n e IA aplicada. El aprendizaje acompaña el trabajo de desarrollar, integrar y mantener cada solución.</p>
           <div class="about-actions">
             <a class="btn btn-ghost" href={siteConfig.contact.cvPath} target="_blank" rel="noreferrer">Ver CV</a>
@@ -198,11 +193,6 @@ const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig
   .main-case-copy > p:not(.eyebrow) { color: var(--ink-soft); }
   .main-case-copy .lede { font-size: clamp(1.2rem, 1rem + .5vw, 1.45rem); }
   .main-case-copy .main-case-status { margin: 1.5rem 0; color: var(--muted); font-size: .85rem; }
-  .main-case-figure { margin: 0; min-width: 0; }
-  .main-case-figure a { display: block; padding: .75rem; border: 1px solid var(--line-strong); background: var(--bg); }
-  .main-case-figure a:hover, .main-case-figure a:focus-visible { border-color: var(--accent); }
-  .main-case-figure img { width: 100%; height: auto; }
-  .main-case-figure figcaption { margin-top: .8rem; color: var(--muted); font-size: .8rem; }
   .product-journey { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; list-style: none; margin: 3rem 0 0; padding: 0; }
   .product-journey li { border-top: 1px solid var(--line-strong); padding-top: 1.1rem; }
   .product-journey span { display: block; margin-bottom: .5rem; color: var(--accent-ink); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
@@ -216,7 +206,7 @@ const projectEmailHref = emailHref + '?subject=' + encodeURIComponent(siteConfig
   .service-evidence > span { color: var(--muted); font-size: .75rem; }
   .service-evidence a { color: var(--accent-ink); text-underline-offset: .25em; }
   .experience-period { color: var(--muted); font-size: .8rem; }
-  @media (max-width: 860px) { .main-case-layout { grid-template-columns: 1fr; } .main-case-figure { max-width: 38rem; } }
+  @media (max-width: 860px) { .main-case-layout { grid-template-columns: 1fr; } }
   @media (max-width: 560px) {
     .hero h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); }
     .hero-actions { display: grid; }

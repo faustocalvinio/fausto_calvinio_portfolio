@@ -6,6 +6,8 @@ import N8nWorkflowShowcase from '../../components/N8nWorkflowShowcase.astro';
 import PythonCodeExplorer from '../../components/PythonCodeExplorer.astro';
 import MultiAgentArchitectureCanvas from '../../components/MultiAgentArchitectureCanvas.astro';
 import ProjectGallery from '../../components/ProjectGallery.astro';
+import CrmPreview from '../../components/CrmPreview.astro';
+import RuralPreview from '../../components/RuralPreview.astro';
 import Layout from '../../layouts/Layout.astro';
 import { seoConfig } from '../../config/seo';
 import { siteConfig } from '../../config/site';
@@ -34,7 +36,9 @@ const structuredData = [
 ];
 const isN8nProject = entry.data.slug === 'automatizaciones-n8n';
 const isMultiAgentProject = entry.data.slug === 'plataforma-multi-rubro-agentes';
-const hasWideVisual = isN8nProject || isMultiAgentProject || entry.data.visuals.some((visual) => visual.type === 'image' && visual.src);
+const isCrmProject = entry.data.slug === 'hanexa-crm';
+const isRuralProject = entry.data.slug === 'hanexa-rural';
+const hasWideVisual = isN8nProject || isMultiAgentProject || isCrmProject || isRuralProject || entry.data.visuals.some((visual) => visual.type === 'image' && visual.src);
 const contactHref = 'mailto:' + seoConfig.author.email + '?subject=' + encodeURIComponent('Hablemos sobre ' + entry.data.title);
 ---
 
@@ -47,7 +51,7 @@ const contactHref = 'mailto:' + seoConfig.author.email + '?subject=' + encodeURI
         <p class="eyebrow">{entry.data.category} · {entry.data.year}</p>
         <h1>{entry.data.title}</h1>
         <p class="lede">{entry.data.summary}</p>
-        <ul class="tags">{entry.data.stack.map((technology) => <li>{technology}</li>)}</ul>
+        {entry.data.stack.length > 0 && <ul class="tags">{entry.data.stack.map((technology) => <li>{technology}</li>)}</ul>}
         <dl class="project-facts">
           <div><dt>Estado</dt><dd>{entry.data.status}</dd></div>
           {entry.data.role && <div><dt>Mi aporte</dt><dd>{entry.data.role}</dd></div>}
@@ -63,6 +67,8 @@ const contactHref = 'mailto:' + seoConfig.author.email + '?subject=' + encodeURI
           <h2>Solución</h2><p>{entry.data.solution}</p>
         </div>
 
+        {isCrmProject && <CrmPreview idPrefix="case-crm" />}
+        {isRuralProject && <div class="rural-case-visual"><RuralPreview idPrefix="case-rural" /></div>}
         <ProjectGallery visuals={entry.data.visuals} />
 
         {isN8nProject && <N8nWorkflowShowcase />}
@@ -83,7 +89,7 @@ const contactHref = 'mailto:' + seoConfig.author.email + '?subject=' + encodeURI
             <div class="project-links">
               <h2>Explorar el proyecto</h2>
               {entry.data.links.live && <a class="case-link" href={entry.data.links.live} target="_blank" rel="noreferrer">Ver proyecto publicado ↗</a>}
-              {entry.data.links.demo && <a class="case-link" href={entry.data.links.demo} target="_blank" rel="noreferrer">Explorar demo con datos de ejemplo ↗</a>}
+              {entry.data.links.demo && <a class="case-link" href={entry.data.links.demo} target="_blank" rel="noreferrer">Probar demo ↗</a>}
               {entry.data.links.github && <a class="case-link" href={entry.data.links.github} target="_blank" rel="noreferrer">Ver código en GitHub ↗</a>}
             </div>
           )}
@@ -104,6 +110,7 @@ const contactHref = 'mailto:' + seoConfig.author.email + '?subject=' + encodeURI
 </Layout>
 
 <style>
+  .rural-case-visual { margin-block: 3rem; }
   .project-facts { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 2rem; margin: 2rem 0 0; padding-top: 1.5rem; border-top: 1px solid var(--line); }
   .project-facts dt { color: var(--muted); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .5rem; }
   .project-facts dd { margin: 0; max-width: 62ch; color: var(--ink-soft); font-size: .95rem; }

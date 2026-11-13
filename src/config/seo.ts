@@ -7,7 +7,7 @@ export const seoConfig = {
     name: 'Fausto Calviño',
     shortName: 'Fausto Calviño',
     description:
-      'Fausto Calviño: desarrollo de productos web, integraciones, automatizaciones e IA aplicada. Casos de Hanexa CRM, puntos y beneficios, y Carta Digital ALEM.',
+      'Fausto Calviño: desarrollo de productos web, integraciones, automatizaciones e IA aplicada. Casos de Hanexa CRM, puntos y beneficios, y Hanexa Rural.',
   },
   author: {
     name: 'Fausto Calviño',

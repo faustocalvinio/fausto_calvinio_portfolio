@@ -7,37 +7,19 @@ problem: Un programa de fidelidad necesita conectar los consumos, el saldo de pu
 solution: Una aplicación con catálogo de beneficios, activación de canjes e identificación del cliente, junto con herramientas de administración y una base para separar distintos restaurantes.
 status: Desarrollo funcional local; sin resultados comerciales atribuidos.
 role: Desarrollo integral propio del producto, sus recorridos de cliente y negocio, la API y la implementación local.
-disclaimer: Las capturas pertenecen a la demo del recorrido de uso y utilizan el negocio ficticio Café Aurora. Sus puntos, consumos e indicadores son datos de ejemplo; no documentan clientes ni resultados de la versión local.
+disclaimer: La captura muestra el panel del cliente de la demo pública con datos ficticios. El saldo, el perfil y los premios son ejemplos, no resultados comerciales.
 featured: true
 year: '2026'
 stack: [React, TypeScript, NestJS, PostgreSQL, Docker]
 links:
-  demo: https://demo-membresias.pages.dev/
+  demo: https://demo-puntos.hanexa.com.ar/
 visuals:
   - type: image
-    src: /proyectos/hanexa-puntos/catalogo.webp
-    alt: Catálogo móvil de premios de Café Aurora con los puntos necesarios para canjear una limonada.
-    caption: El cliente explora los beneficios desde el celular. Demo con datos ficticios.
-    width: 780
-    height: 1800
-  - type: image
-    src: /proyectos/hanexa-puntos/detalle.webp
-    alt: Detalle de un beneficio con condiciones, saldo posterior y botón para activarlo.
-    caption: Antes de activar, se muestran las condiciones y los puntos del canje. Demo.
-    width: 780
-    height: 1800
-  - type: image
-    src: /proyectos/hanexa-puntos/canje.webp
-    alt: Confirmación de beneficio activado con acceso al QR del cliente.
-    caption: La activación permite continuar el recorrido en caja. Demo con datos ficticios.
-    width: 780
-    height: 1800
-  - type: image
-    src: /proyectos/hanexa-puntos/administracion.webp
-    alt: Panel de administración de Café Aurora con navegación a clientes, beneficios, empleados y configuración.
-    caption: Vista de administración de la demo. Todos los indicadores son datos de ejemplo.
-    width: 1600
-    height: 978
+    src: /proyectos/hanexa-puntos/cliente-actual.webp
+    alt: Panel del cliente de la demo de Hanexa Puntos, con saldo disponible, acceso al QR y premios de ejemplo.
+    caption: Panel del cliente de la demo pública. Perfil, saldo y premios ficticios.
+    width: 1265
+    height: 712
 ---
 
 ### Dos recorridos, un mismo programa
